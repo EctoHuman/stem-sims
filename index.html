@@ -1,4 +1,166 @@
-<main class="grid" id="simGrid">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive STEM Simulations — Physics, Chemistry & Math</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #273549;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --physics: #38bdf8;
+      --chemistry: #34d399;
+      --math: #c084fc;
+      --accent: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 2rem 1.25rem 4rem;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.25rem;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.75rem;
+    }
+    h1 { font-size: 1.85rem; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); font-size: 0.98rem; margin-top: 0.25rem; }
+    .btn-zip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 0.7rem 1.15rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-zip:hover { transform: translateY(-1px); opacity: 0.92; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tab {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text); border-color: #475569; }
+    .tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      min-width: 260px;
+      font-size: 0.92rem;
+    }
+    .search-box:focus { outline: 2px solid var(--physics); border-color: transparent; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .card:hover { transform: translateY(-3px); border-color: #475569; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      width: fit-content;
+    }
+    .badge.physics { background: rgba(56, 189, 248, 0.15); color: var(--physics); }
+    .badge.chemistry { background: rgba(52, 211, 153, 0.15); color: var(--chemistry); }
+    .badge.math { background: rgba(192, 132, 252, 0.15); color: var(--math); }
+    .card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .card p { color: var(--muted); font-size: 0.92rem; margin-bottom: 1.25rem; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .btn {
+      text-align: center;
+      text-decoration: none;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-run { background: #38bdf8; color: #0f172a; }
+    .btn-dl { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-dl:hover { background: var(--surface-hover); }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Interactive STEM Lab</h1>
+        <p class="subtitle">Run simulations live in your browser or download standalone .html files for 100% offline study.</p>
+      </div>
+      <a id="zipDownloadBtn" href="https://github.com/EctoHuman/stem-sims/archive/refs/heads/main.zip" class="btn-zip">
+        ⬇ Download All Offline (.zip)
+      </a>
+    </header>
+
+    <div class="toolbar">
+      <div class="tabs" id="filterTabs">
+        <button class="tab active" data-filter="all">All Subjects</button>
+        <button class="tab" data-filter="physics">Physics</button>
+        <button class="tab" data-filter="chemistry">Chemistry</button>
+        <button class="tab" data-filter="math">Mathematics</button>
+      </div>
+      <input type="search" id="searchInput" class="search-box" placeholder="Search topic or formula..." />
+    </div>
+
+    <main class="grid" id="simGrid">
+      <!-- 1. PHYSICS: BOAT RIVER -->
       <article class="card" data-subject="physics" data-keywords="relative velocity boat river vectors drift kinematics">
         <div>
           <span class="badge physics">Physics I</span>
@@ -11,6 +173,7 @@
         </div>
       </article>
 
+      <!-- 2. PHYSICS: PENDULUM -->
       <article class="card" data-subject="physics" data-keywords="pendulum shm simple harmonic motion energy conservation period">
         <div>
           <span class="badge physics">Physics I</span>
@@ -23,6 +186,7 @@
         </div>
       </article>
 
+      <!-- 3. CHEMISTRY: IDEAL GAS LAW -->
       <article class="card" data-subject="chemistry" data-keywords="ideal gas law pv=nrt pressure temperature volume moles particles">
         <div>
           <span class="badge chemistry">Chemistry</span>
@@ -35,6 +199,7 @@
         </div>
       </article>
 
+      <!-- 4. MATH: DERIVATIVES -->
       <article class="card" data-subject="math" data-keywords="calculus derivative tangent secant limit slope">
         <div>
           <span class="badge math">Calculus I</span>
@@ -47,3 +212,51 @@
         </div>
       </article>
     </main>
+
+    <footer>
+      100% Free & Open Educational Resource • Works Online & Offline
+    </footer>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const cards = document.querySelectorAll('.card');
+    const searchInput = document.getElementById('searchInput');
+    let activeFilter = 'all';
+
+    function filterCards() {
+      const query = searchInput.value.toLowerCase().trim();
+      cards.forEach(card => {
+        const subject = card.dataset.subject;
+        const text = (card.innerText + ' ' + card.dataset.keywords).toLowerCase();
+        const matchesTab = activeFilter === 'all' || subject === activeFilter;
+        const matchesSearch = !query || text.includes(query);
+        card.style.display = (matchesTab && matchesSearch) ? 'flex' : 'none';
+      });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeFilter = tab.dataset.filter;
+        filterCards();
+      });
+    });
+
+    searchInput.addEventListener('input', filterCards);
+
+    // Dynamically update ZIP link if username or repo changes
+    const host = window.location.hostname;
+    if (host.endsWith('.github.io')) {
+      const username = host.split('.')[0];
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0) {
+        const repo = pathParts[0];
+        const zipBtn = document.getElementById('zipDownloadBtn');
+        zipBtn.href = `https://github.com/${username}/${repo}/archive/refs/heads/main.zip`;
+      }
+    }
+  </script>
+</body>
+</html>
