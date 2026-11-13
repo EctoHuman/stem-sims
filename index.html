@@ -3,235 +3,1502 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interactive STEM Simulations — Physics, Chemistry & Math</title>
+  <title>STEM.LAB ✪ Interactive Physics, Chemistry & Calculus Simulations</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-hover: #273549;
-      --border: #334155;
+      --bg: #050508;
+      --bg-elevated: #0b0c12;
+      --card: rgba(15, 17, 26, 0.72);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.22);
       --text: #f8fafc;
-      --muted: #94a3b8;
+      --muted: #8e96aa;
       --physics: #38bdf8;
       --chemistry: #34d399;
       --math: #c084fc;
-      --accent: #f59e0b;
+      --accent: #ff5e3a;
+      --gold: #f59e0b;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding: 2rem 1.25rem 4rem;
+      overflow-x: hidden;
+      selection-background-color: var(--physics);
     }
-    .container { max-width: 1100px; margin: 0 auto; }
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.25rem;
-      padding-bottom: 1.75rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 1.75rem;
+
+    ::selection {
+      background: var(--physics);
+      color: #050508;
     }
-    h1 { font-size: 1.85rem; letter-spacing: -0.02em; }
-    .subtitle { color: var(--muted); font-size: 0.98rem; margin-top: 0.25rem; }
-    .btn-zip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--accent);
-      color: #0f172a;
-      font-weight: 700;
-      text-decoration: none;
-      padding: 0.7rem 1.15rem;
-      border-radius: 10px;
-      font-size: 0.92rem;
-      transition: transform 0.15s, opacity 0.15s;
+
+    /* TOP SCROLL PROGRESS LASER */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--physics), var(--chemistry), var(--math), var(--accent));
+      z-index: 9999;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
     }
-    .btn-zip:hover { transform: translateY(-1px); opacity: 0.92; }
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1.75rem;
-    }
-    .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .tab {
-      background: var(--surface);
-      color: var(--muted);
-      border: 1px solid var(--border);
-      padding: 0.5rem 1rem;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: all 0.15s;
-    }
-    .tab:hover { color: var(--text); border-color: #475569; }
-    .tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .search-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.55rem 1rem;
-      border-radius: 10px;
-      min-width: 260px;
-      font-size: 0.92rem;
-    }
-    .search-box:focus { outline: 2px solid var(--physics); border-color: transparent; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 1.25rem;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.35rem;
+
+    /* CINEMATIC PRELOADER CURTAIN */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: #030305;
+      z-index: 10000;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.15s, border-color 0.15s;
+      padding: 2.5rem 3rem;
+      transition: transform 0.9s var(--ease-in-out-quart);
     }
-    .card:hover { transform: translateY(-3px); border-color: #475569; }
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 700;
+    .preloader.loaded {
+      transform: translateY(-100%);
+      pointer-events: none;
+    }
+    .preloader-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px;
-      margin-bottom: 0.75rem;
-      width: fit-content;
+      color: var(--muted);
     }
-    .badge.physics { background: rgba(56, 189, 248, 0.15); color: var(--physics); }
-    .badge.chemistry { background: rgba(52, 211, 153, 0.15); color: var(--chemistry); }
-    .badge.math { background: rgba(192, 132, 252, 0.15); color: var(--math); }
-    .card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-    .card p { color: var(--muted); font-size: 0.92rem; margin-bottom: 1.25rem; }
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
-    .btn {
-      text-align: center;
+    .preloader-counter {
+      font-size: clamp(4rem, 12vw, 9rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 0%, #64748b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .preloader-bar-wrap {
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      border-radius: 99px;
+    }
+    .preloader-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--physics), var(--math));
+      transition: width 0.15s linear;
+    }
+
+    /* AMBIENT VOLUMETRIC CANVAS & FILM GRAIN */
+    #ambientCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    .film-grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.038;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* CUSTOM MAGNETIC CURSOR */
+    @media (pointer: fine) {
+      .cursor-dot,
+      .cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+      }
+      .cursor-dot {
+        width: 7px;
+        height: 7px;
+        background: #fff;
+        border-radius: 50%;
+        transition: opacity 0.2s;
+      }
+      .cursor-ring {
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #050508;
+        background: transparent;
+        backdrop-filter: blur(2px);
+        transition: width 0.3s var(--ease-out-expo),
+                    height 0.3s var(--ease-out-expo),
+                    background 0.3s var(--ease-out-expo),
+                    border-color 0.3s var(--ease-out-expo);
+      }
+      .cursor-ring span {
+        opacity: 0;
+        transform: scale(0.7);
+        transition: all 0.25s var(--ease-out-expo);
+        white-space: nowrap;
+      }
+      .cursor-ring.active {
+        width: 86px;
+        height: 34px;
+        background: #ffffff;
+        border-color: #ffffff;
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.25);
+      }
+      .cursor-ring.active span {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    @media (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none; }
+    }
+
+    /* PAGE CONTENT WRAPPER */
+    .page-wrap {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* FLOATING GLASS NAVBAR */
+    .navbar-wrap {
+      position: sticky;
+      top: 1.25rem;
+      z-index: 100;
+      padding: 0 1.5rem;
+      margin-top: 1.25rem;
+    }
+    .navbar {
+      max-width: 1240px;
+      margin: 0 auto;
+      background: rgba(11, 12, 18, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
       text-decoration: none;
-      padding: 0.6rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      transition: opacity 0.15s;
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: 1.05rem;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn-run { background: #38bdf8; color: #0f172a; }
-    .btn-dl { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn-dl:hover { background: var(--surface-hover); }
-    footer {
-      margin-top: 3rem;
-      text-align: center;
+    .brand-star {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--physics), var(--math));
+      color: #050508;
+      font-size: 0.9rem;
+      animation: spinSlow 12s linear infinite;
+    }
+    @keyframes spinSlow {
+      to { transform: rotate(360deg); }
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    @media (max-width: 780px) {
+      .nav-links { display: none; }
+    }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff;
+      color: #050508;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s;
+    }
+    .nav-cta:hover {
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+    }
+
+    /* HERO SECTION */
+    .hero {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 5.5rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.42rem 0.95rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      margin-bottom: 2rem;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--chemistry);
+      box-shadow: 0 0 12px var(--chemistry);
+      animation: pulseGlow 2s infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.55; }
+    }
+
+    .hero-title {
+      font-size: clamp(2.75rem, 7.2vw, 6.4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 0.98;
+      margin-bottom: 1.75rem;
+      max-width: 1080px;
+    }
+    .hero-title .line {
+      display: block;
+      overflow: hidden;
+      padding-bottom: 0.08em;
+    }
+    .hero-title .line-inner {
+      display: block;
+      transform: translateY(110%);
+      transition: transform 1s var(--ease-out-expo);
+    }
+    body.ready .hero-title .line-inner {
+      transform: translateY(0%);
+    }
+    body.ready .hero-title .line:nth-child(2) .line-inner {
+      transition-delay: 0.1s;
+    }
+    body.ready .hero-title .line:nth-child(3) .line-inner {
+      transition-delay: 0.2s;
+    }
+
+    .gradient-span {
+      background: linear-gradient(95deg, var(--physics) 0%, var(--chemistry) 48%, var(--math) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-style: italic;
+      padding-right: 0.1em;
+    }
+
+    .hero-bottom {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+      margin-top: 1rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .hero-desc {
+      max-width: 540px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.65;
+    }
+    .hero-desc strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+    }
+    .btn-primary, .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.95rem 1.6rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      text-decoration: none;
+      transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s, border-color 0.25s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--physics), #2563eb);
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.28);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 14px 38px rgba(56, 189, 248, 0.45);
+    }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--border-bright);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* INFINITE KINETIC MARQUEE */
+    .marquee-section {
+      margin: 2.5rem 0 4.5rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+      padding: 1.05rem 0;
+      overflow: hidden;
+      display: flex;
+      user-select: none;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 2.5rem;
+      white-space: nowrap;
+      will-change: transform;
+      animation: marqueeScroll 28s linear infinite;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 2.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .marquee-item span.star {
+      color: var(--physics);
+      font-size: 1rem;
+    }
+    @keyframes marqueeScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* MAIN SHOWCASE CONTAINER */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+      margin-bottom: 2.25rem;
+    }
+    .eyebrow {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--physics);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    /* FILTER PILLS & SEARCH BAR */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding: 0.75rem;
+      border-radius: 20px;
+      background: rgba(15, 17, 26, 0.65);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .tab {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+      padding: 0.55rem 1.15rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.86rem;
+      transition: all 0.25s var(--ease-out-expo);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab.active {
+      background: var(--text);
+      color: #050508;
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+    }
+    .tab-count {
+      font-size: 0.72rem;
+      opacity: 0.7;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1 1 260px;
+      max-width: 340px;
+    }
+    .search-box {
+      width: 100%;
+      background: rgba(5, 5, 8, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.65rem 1rem 0.65rem 2.4rem;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-box:focus {
+      outline: none;
+      border-color: var(--physics);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
       color: var(--muted);
       font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    /* 3D CASE-STUDY SIMULATION GRID */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+      gap: 1.75rem;
+    }
+    @media (max-width: 600px) {
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sim-card {
+      --mx: 50%;
+      --my: 50%;
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      transform-style: preserve-3d;
+      transition: transform 0.35s var(--ease-out-expo), border-color 0.35s;
+    }
+    /* Spotlight Radial Glow following Mouse */
+    .sim-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        600px circle at var(--mx) var(--my),
+        rgba(255, 255, 255, 0.08),
+        transparent 40%
+      );
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .sim-card:hover::before {
+      opacity: 1;
+    }
+    .sim-card:hover {
+      border-color: var(--border-bright);
+    }
+
+    /* LIVE MINI-CANVAS PREVIEW STAGE */
+    .card-preview {
+      position: relative;
+      width: 100%;
+      height: 210px;
+      border-radius: 16px;
+      background: #06080f;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      margin-bottom: 1.4rem;
+      overflow: hidden;
+    }
+    .card-preview canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .preview-overlay {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      right: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+    .card-index {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(5, 5, 8, 0.75);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      backdrop-filter: blur(6px);
+    }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+    .badge.physics {
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--physics);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .badge.chemistry {
+      background: rgba(52, 211, 153, 0.16);
+      color: var(--chemistry);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+    }
+    .badge.math {
+      background: rgba(192, 132, 252, 0.16);
+      color: var(--math);
+      border: 1px solid rgba(192, 132, 252, 0.35);
+    }
+
+    .formula-tag {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.85rem;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      background: rgba(5, 5, 8, 0.8);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.65rem;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .card-body h2 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .card-body p {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 1.4rem;
+    }
+    .chip {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 0.75rem;
+      position: relative;
+      z-index: 2;
+    }
+    .btn-card {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.78rem 1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s var(--ease-out-expo);
+    }
+    .btn-launch {
+      background: #ffffff;
+      color: #050508;
+    }
+    .btn-launch:hover {
+      background: var(--physics);
+      color: #050508;
+      box-shadow: 0 8px 25px rgba(56, 189, 248, 0.35);
+      transform: translateY(-2px);
+    }
+    .btn-download {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-download:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+
+    /* BENTO METRICS & ARCHITECTURE SECTION */
+    .bento-section {
+      margin-top: 6rem;
+    }
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+    @media (max-width: 900px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .bento-grid { grid-template-columns: 1fr; }
+    }
+    .bento-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-num {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .bento-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+    .bento-sub {
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    /* INTERACTIVE ACCORDION FAQ / WORKFLOW */
+    .faq-section {
+      margin-top: 6rem;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .faq-section { grid-template-columns: 1fr; }
+    }
+    .accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .acc-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .acc-item.open {
+      border-color: var(--border-bright);
+    }
+    .acc-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 1.25rem 1.4rem;
+      text-align: left;
+      font-size: 1.02rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .acc-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: transform 0.3s var(--ease-out-expo), background 0.3s;
+    }
+    .acc-item.open .acc-icon {
+      transform: rotate(45deg);
+      background: #fff;
+      color: #050508;
+    }
+    .acc-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s var(--ease-out-expo);
+    }
+    .acc-content-inner {
+      padding: 0 1.4rem 1.35rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+    .acc-content-inner code {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--physics);
+      padding: 0.15rem 0.45rem;
+      border-radius: 5px;
+      font-size: 0.84rem;
+    }
+
+    /* DRAMATIC OUTCROWD-STYLE FOOTER */
+    footer {
+      margin-top: 7rem;
+      border-top: 1px solid var(--border);
+      padding: 4.5rem 1.5rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    .footer-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+      padding-bottom: 3.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .footer-big {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      padding: 0.9rem 1.5rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .copy-btn:hover {
+      background: #fff;
+      color: #050508;
+    }
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 2rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+    .watermark {
+      font-size: clamp(4.5rem, 15vw, 13rem);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.03);
+      line-height: 0.85;
+      margin-top: 2.5rem;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* SCROLL REVEAL UTILITY */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <h1>Interactive STEM Lab</h1>
-        <p class="subtitle">Run simulations live in your browser or download standalone .html files for 100% offline study.</p>
-      </div>
-      <a id="zipDownloadBtn" href="https://github.com/EctoHuman/stem-sims/archive/refs/heads/main.zip" class="btn-zip">
-        ⬇ Download All Offline (.zip)
-      </a>
-    </header>
+  <!-- TOP SCROLL PROGRESS -->
+  <div class="scroll-progress" id="scrollProgress"></div>
 
-    <div class="toolbar">
-      <div class="tabs" id="filterTabs">
-        <button class="tab active" data-filter="all">All Subjects</button>
-        <button class="tab" data-filter="physics">Physics</button>
-        <button class="tab" data-filter="chemistry">Chemistry</button>
-        <button class="tab" data-filter="math">Mathematics</button>
-      </div>
-      <input type="search" id="searchInput" class="search-box" placeholder="Search topic or formula..." />
+  <!-- CINEMATIC CURTAIN PRELOADER -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-top">
+      <span>✪ STEM.LAB INTERACTIVE ENGINE</span>
+      <span>PHYSICS • CHEMISTRY • CALCULUS</span>
+    </div>
+    <div class="preloader-counter" id="preloaderCount">00%</div>
+    <div class="preloader-bar-wrap">
+      <div class="preloader-bar" id="preloaderBar"></div>
+    </div>
+  </div>
+
+  <!-- VOLUMETRIC AURORA BACKGROUND CANVAS & FILM GRAIN -->
+  <canvas id="ambientCanvas"></canvas>
+  <div class="film-grain"></div>
+
+  <!-- CUSTOM MAGNETIC CURSOR -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"><span id="cursorText">LAUNCH ↗</span></div>
+
+  <div class="page-wrap">
+    <!-- FLOATING GLASS NAVBAR -->
+    <div class="navbar-wrap">
+      <nav class="navbar">
+        <a href="#" class="brand">
+          <span class="brand-star">✪</span>
+          <span>STEM.LAB</span>
+        </a>
+        <div class="nav-links">
+          <a href="#simulations">Simulations</a>
+          <a href="#architecture">Engine Specs</a>
+          <a href="#workflow">How It Works</a>
+        </div>
+        <a id="navZipBtn" href="https://github.com/EctoHuman/stem-sims/archive/refs/heads/main.zip" class="nav-cta" data-cursor="ZIP ↓">
+          <span>⬇ Offline Pack (.zip)</span>
+        </a>
+      </nav>
     </div>
 
-    <main class="grid" id="simGrid">
-      <!-- 1. PHYSICS: BOAT RIVER -->
-      <article class="card" data-subject="physics" data-keywords="relative velocity boat river vectors drift kinematics">
-        <div>
-          <span class="badge physics">Physics I</span>
-          <h2>Boat-River Relative Velocity</h2>
-          <p>Explore 2D vector addition, river current drift, shortest-time vs. shortest-path crossings, and interactive velocity components.</p>
-        </div>
-        <div class="actions">
-          <a href="physics/boat-river.html" class="btn btn-run">▶ Run Online</a>
-          <a href="physics/boat-river.html" download="Boat-River-Relative-Velocity.html" class="btn btn-dl">⬇ Offline .html</a>
-        </div>
-      </article>
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="status-pill">
+        <span class="pulse-dot"></span>
+        <span>100% Offline-Ready HTML5 Simulation Suite</span>
+      </div>
 
-      <!-- 2. PHYSICS: PENDULUM -->
-      <article class="card" data-subject="physics" data-keywords="pendulum shm simple harmonic motion energy conservation period">
-        <div>
-          <span class="badge physics">Physics I</span>
-          <h2>Pendulum & Energy Conservation</h2>
-          <p>Adjust string length, gravity, and release angle while watching real-time Kinetic, Potential, and Total Energy bar charts.</p>
-        </div>
-        <div class="actions">
-          <a href="physics/pendulum-lab.html" class="btn btn-run">▶ Run Online</a>
-          <a href="physics/pendulum-lab.html" download="Pendulum-Energy-Lab.html" class="btn btn-dl">⬇ Offline .html</a>
-        </div>
-      </article>
+      <h1 class="hero-title">
+        <span class="line"><span class="line-inner">We don’t just show</span></span>
+        <span class="line"><span class="line-inner">formulas. We build <span class="gradient-span">living</span></span></span>
+        <span class="line"><span class="line-inner">science laboratories.</span></span>
+      </h1>
 
-      <!-- 3. CHEMISTRY: IDEAL GAS LAW -->
-      <article class="card" data-subject="chemistry" data-keywords="ideal gas law pv=nrt pressure temperature volume moles particles">
-        <div>
-          <span class="badge chemistry">Chemistry</span>
-          <h2>Ideal Gas Law Lab (PV = nRT)</h2>
-          <p>Adjust container volume, temperature, and particle count to observe molecular collisions and pressure changes in real time.</p>
+      <div class="hero-bottom">
+        <p class="hero-desc">
+          Interactive <strong>Physics I</strong>, <strong>Chemistry</strong>, and <strong>Calculus I</strong> simulations engineered with zero external dependencies. Run them live in your browser or download standalone <code>.html</code> files for 100% offline study.
+        </p>
+        <div class="hero-actions">
+          <a href="#simulations" class="btn-primary" data-cursor="EXPLORE">
+            <span>Explore Laboratories</span>
+            <span>↘</span>
+          </a>
+          <a id="heroZipBtn" href="https://github.com/EctoHuman/stem-sims/archive/refs/heads/main.zip" class="btn-ghost" data-cursor="SAVE ALL">
+            <span>📦 Download Full Archive (.zip)</span>
+          </a>
         </div>
-        <div class="actions">
-          <a href="chemistry/ideal-gas.html" class="btn btn-run">▶ Run Online</a>
-          <a href="chemistry/ideal-gas.html" download="Ideal-Gas-Law-Lab.html" class="btn btn-dl">⬇ Offline .html</a>
-        </div>
-      </article>
+      </div>
+    </section>
 
-      <!-- 4. MATH: DERIVATIVES -->
-      <article class="card" data-subject="math" data-keywords="calculus derivative tangent secant limit slope">
+    <!-- KINETIC MARQUEE TICKER -->
+    <div class="marquee-section" aria-hidden="true">
+      <div class="marquee-track" id="marqueeTrack">
+        <div class="marquee-item">
+          <span>PHYSICS I KINEMATICS</span><span class="star">✪</span>
+          <span>IDEAL GAS THERMODYNAMICS</span><span class="star">✪</span>
+          <span>CALCULUS I DERIVATIVES</span><span class="star">✪</span>
+          <span>100% OFFLINE STANDALONE .HTML</span><span class="star">✪</span>
+          <span>REAL-TIME VECTOR DECOMPOSITION</span><span class="star">✪</span>
+          <span>60 FPS CANVAS ENGINE</span><span class="star">✪</span>
+        </div>
+        <div class="marquee-item">
+          <span>PHYSICS I KINEMATICS</span><span class="star">✪</span>
+          <span>IDEAL GAS THERMODYNAMICS</span><span class="star">✪</span>
+          <span>CALCULUS I DERIVATIVES</span><span class="star">✪</span>
+          <span>100% OFFLINE STANDALONE .HTML</span><span class="star">✪</span>
+          <span>REAL-TIME VECTOR DECOMPOSITION</span><span class="star">✪</span>
+          <span>60 FPS CANVAS ENGINE</span><span class="star">✪</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE SHOWCASE -->
+    <main class="container" id="simulations">
+      <div class="section-header reveal">
         <div>
-          <span class="badge math">Calculus I</span>
-          <h2>Secant to Tangent Visualizer</h2>
-          <p>Slide Δx toward zero on continuous functions to watch the secant slope converge to the instantaneous derivative f'(x).</p>
+          <div class="eyebrow">01 // Interactive Case Studies</div>
+          <h2 class="section-title">Select a Laboratory</h2>
         </div>
-        <div class="actions">
-          <a href="math/derivative-tangent.html" class="btn btn-run">▶ Run Online</a>
-          <a href="math/derivative-tangent.html" download="Secant-To-Tangent-Calculus.html" class="btn btn-dl">⬇ Offline .html</a>
+      </div>
+
+      <!-- FILTER & SEARCH BAR -->
+      <div class="controls-bar reveal">
+        <div class="tabs" id="filterTabs">
+          <button class="tab active" data-filter="all">All Labs <span class="tab-count">(4)</span></button>
+          <button class="tab" data-filter="physics">Physics I <span class="tab-count">(2)</span></button>
+          <button class="tab" data-filter="chemistry">Chemistry <span class="tab-count">(1)</span></button>
+          <button class="tab" data-filter="math">Calculus I <span class="tab-count">(1)</span></button>
         </div>
-      </article>
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="search" id="searchInput" class="search-box" placeholder="Search formula, vector, gas, tangent..." />
+        </div>
+      </div>
+
+      <!-- SIMULATION CARDS GRID -->
+      <div class="sim-grid" id="simGrid">
+        <!-- CARD 01: BOAT RIVER -->
+        <article class="sim-card reveal" data-subject="physics" data-keywords="relative velocity boat river vectors drift kinematics shortest time path">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewBoat"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 01</span>
+                <span class="badge physics">Physics I</span>
+              </div>
+              <span class="formula-tag">v⃗_bg = v⃗_br + v⃗_rg</span>
+            </div>
+            <div class="card-body">
+              <h2>Boat-River Relative Velocity</h2>
+              <p>Analyze 2D relative motion across a flowing river. Compare shortest-time vs. zero-drift crossings with draggable velocity vectors and measuring tape.</p>
+              <div class="chip-row">
+                <span class="chip">2D Vector Addition</span>
+                <span class="chip">Drift Δx Analysis</span>
+                <span class="chip">Interactive Ruler</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="physics/boat-river.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="physics/boat-river.html" download="Boat-River-Relative-Velocity.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+
+        <!-- CARD 02: PENDULUM -->
+        <article class="sim-card reveal" data-subject="physics" data-keywords="pendulum shm simple harmonic motion energy conservation period gravity">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewPendulum"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 02</span>
+                <span class="badge physics">Physics I</span>
+              </div>
+              <span class="formula-tag">T = 2π√(L / g)</span>
+            </div>
+            <div class="card-body">
+              <h2>Pendulum & Energy Conservation</h2>
+              <p>Solve exact nonlinear pendulum motion in real time while inspecting live Kinetic, Potential, and Total Mechanical Energy bar charts.</p>
+              <div class="chip-row">
+                <span class="chip">Harmonic Motion</span>
+                <span class="chip">Live Energy Bars</span>
+                <span class="chip">Variable Gravity</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="physics/pendulum-lab.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="physics/pendulum-lab.html" download="Pendulum-Energy-Lab.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+
+        <!-- CARD 03: IDEAL GAS LAW -->
+        <article class="sim-card reveal" data-subject="chemistry" data-keywords="ideal gas law pv=nrt pressure temperature volume moles kinetic molecular">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewGas"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 03</span>
+                <span class="badge chemistry">Chemistry</span>
+              </div>
+              <span class="formula-tag">P·V = n·R·T</span>
+            </div>
+            <div class="card-body">
+              <h2>Ideal Gas Law Lab (PV = nRT)</h2>
+              <p>Compress the movable piston, heat the chamber, or inject gas particles to observe elastic molecular collisions and live pressure readouts.</p>
+              <div class="chip-row">
+                <span class="chip">Kinetic Theory</span>
+                <span class="chip">Dynamic Piston</span>
+                <span class="chip">Thermal Scaling</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="chemistry/ideal-gas.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="chemistry/ideal-gas.html" download="Ideal-Gas-Law-Lab.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+
+        <!-- CARD 04: SECANT TO TANGENT -->
+        <article class="sim-card reveal" data-subject="math" data-keywords="calculus derivative tangent secant limit slope difference quotient">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewMath"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 04</span>
+                <span class="badge math">Calculus I</span>
+              </div>
+              <span class="formula-tag">lim(Δx→0) Δy/Δx</span>
+            </div>
+            <div class="card-body">
+              <h2>Secant to Tangent Visualizer</h2>
+              <p>Animate Δx approaching zero across polynomial and trigonometric curves to watch the secant line converge to the exact derivative slope.</p>
+              <div class="chip-row">
+                <span class="chip">Limit Convergence</span>
+                <span class="chip">Instantaneous Rate</span>
+                <span class="chip">Error Readout</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="math/derivative-tangent.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="math/derivative-tangent.html" download="Secant-To-Tangent-Calculus.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- ARCHITECTURE METRICS BENTO -->
+      <section class="bento-section reveal" id="architecture">
+        <div class="eyebrow">02 // Built for Zero-Friction Learning</div>
+        <h2 class="section-title">Engineered for Classroom & Offline Reliability</h2>
+        <div class="bento-grid">
+          <div class="bento-item">
+            <div class="bento-num">100%</div>
+            <div class="bento-label">Offline Ready</div>
+            <div class="bento-sub">Every simulation runs from a single self-contained .html file with zero internet required.</div>
+          </div>
+          <div class="bento-item">
+            <div class="bento-num">60 FPS</div>
+            <div class="bento-label">Hardware Canvas</div>
+            <div class="bento-sub">Native HTML5 Canvas physics loops ensure smooth real-time vector and particle rendering.</div>
+          </div>
+          <div class="bento-item">
+            <div class="bento-num">0 KB</div>
+            <div class="bento-label">External Bloat</div>
+            <div class="bento-sub">No broken CDN scripts or missing assets when shared via USB drive or LMS portal.</div>
+          </div>
+          <div class="bento-item">
+            <div class="bento-num">$0</div>
+            <div class="bento-label">Open Access</div>
+            <div class="bento-sub">Free forever for students and educators with instant one-click .html and .zip downloads.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERACTIVE FAQ / WORKFLOW ACCORDION -->
+      <section class="faq-section reveal" id="workflow">
+        <div>
+          <div class="eyebrow">03 // Documentation</div>
+          <h2 class="section-title">How to Use & Expand the Lab</h2>
+          <p style="color: var(--muted); margin-top: 0.75rem; font-size: 0.95rem;">
+            Designed so students can run experiments anywhere and contributors can add new simulations in minutes.
+          </p>
+        </div>
+
+        <div class="accordion">
+          <div class="acc-item open">
+            <button class="acc-trigger">
+              <span>How do I run a simulation without internet?</span>
+              <span class="acc-icon">+</span>
+            </button>
+            <div class="acc-content" style="max-height: 200px;">
+              <div class="acc-content-inner">
+                Click <strong>⬇ Offline .html</strong> on any card to save that specific simulation, or click <strong>⬇ Offline Pack (.zip)</strong> in the top navbar to download the entire website. Double-click any saved <code>.html</code> file on your laptop, tablet, or phone—even in airplane mode.
+              </div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-trigger">
+              <span>How do I add a new Physics, Chemistry, or Math simulation?</span>
+              <span class="acc-icon">+</span>
+            </button>
+            <div class="acc-content">
+              <div class="acc-content-inner">
+                Save your new standalone simulation inside <code>physics/</code>, <code>chemistry/</code>, or <code>math/</code>, duplicate one of the <code>&lt;article class="sim-card"&gt;</code> blocks inside <code>index.html</code>, and upload both files to your GitHub repository.
+              </div>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-trigger">
+              <span>Can I embed these simulations into my class presentation?</span>
+              <span class="acc-icon">+</span>
+            </button>
+            <div class="acc-content">
+              <div class="acc-content-inner">
+                Yes! Because every simulation is hosted over HTTPS on GitHub Pages and scales responsively, you can link them directly in slides, LMS assignments, or open them full-screen on a classroom projector.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
+    <!-- DRAMATIC FOOTER -->
     <footer>
-      100% Free & Open Educational Resource • Works Online & Offline
+      <div class="footer-inner">
+        <div class="footer-cta-row">
+          <div>
+            <div class="eyebrow">Open Educational Portal</div>
+            <div class="footer-big">Ready to experiment?</div>
+          </div>
+          <button class="copy-btn" id="copyUrlBtn" data-cursor="COPY">
+            🔗 Copy Live Portal Link
+          </button>
+        </div>
+        <div class="footer-meta">
+          <span>© 2026 STEM.LAB • Interactive Science & Mathematics Suite</span>
+          <span id="liveClock">LOCAL TIME // --:--:--</span>
+        </div>
+        <div class="watermark">STEM.LAB</div>
+      </div>
     </footer>
   </div>
 
   <script>
+    // 1. CINEMATIC PRELOADER
+    (function initPreloader() {
+      const preloader = document.getElementById('preloader');
+      const countEl = document.getElementById('preloaderCount');
+      const barEl = document.getElementById('preloaderBar');
+      let progress = 0;
+
+      const timer = setInterval(() => {
+        progress += Math.floor(Math.random() * 18) + 12;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(timer);
+          setTimeout(() => {
+            preloader.classList.add('loaded');
+            document.body.classList.add('ready');
+          }, 220);
+        }
+        countEl.textContent = String(progress).padStart(2, '0') + '%';
+        barEl.style.width = progress + '%';
+      }, 65);
+    })();
+
+    // 2. CUSTOM SPRING CURSOR & CARD 3D TILT + SPOTLIGHT
+    const cursorDot = document.getElementById('cursorDot');
+    const cursorRing = document.getElementById('cursorRing');
+    const cursorText = document.getElementById('cursorText');
+    let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+    let ringX = mouseX, ringY = mouseY;
+
+    window.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = mouseX + 'px';
+      cursorDot.style.top = mouseY + 'px';
+    });
+
+    function animateCursor() {
+      ringX += (mouseX - ringX) * 0.18;
+      ringY += (mouseY - ringY) * 0.18;
+      cursorRing.style.left = ringX + 'px';
+      cursorRing.style.top = ringY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursorText.textContent = el.getAttribute('data-cursor');
+        cursorRing.classList.add('active');
+      });
+      el.addEventListener('mouseleave', () => {
+        cursorRing.classList.remove('active');
+      });
+    });
+
+    // 3D Card Tilt & Radial Spotlight Coordinates
+    document.querySelectorAll('.sim-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mx', `${x}px`);
+        card.style.setProperty('--my', `${y}px`);
+
+        const rotateY = ((x / rect.width) - 0.5) * 6;
+        const rotateX = ((y / rect.height) - 0.5) * -6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+      });
+    });
+
+    // 3. AMBIENT VOLUMETRIC AURORA BACKGROUND CANVAS
+    const ambCanvas = document.getElementById('ambientCanvas');
+    const ambCtx = ambCanvas.getContext('2d');
+    function resizeAmb() {
+      ambCanvas.width = window.innerWidth;
+      ambCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeAmb);
+    resizeAmb();
+
+    const orbs = [
+      { x: 0.2, y: 0.25, r: 340, color: 'rgba(56, 189, 248, 0.16)', vx: 0.0004, vy: 0.0003 },
+      { x: 0.75, y: 0.35, r: 380, color: 'rgba(192, 132, 252, 0.14)', vx: -0.0003, vy: 0.0004 },
+      { x: 0.5, y: 0.75, r: 320, color: 'rgba(52, 211, 153, 0.12)', vx: 0.0003, vy: -0.0003 }
+    ];
+
+    function drawAmbient() {
+      ambCtx.clearRect(0, 0, ambCanvas.width, ambCanvas.height);
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if (o.x < 0.1 || o.x > 0.9) o.vx *= -1;
+        if (o.y < 0.1 || o.y > 0.9) o.vy *= -1;
+
+        const cx = o.x * ambCanvas.width + (mouseX - ambCanvas.width / 2) * 0.05;
+        const cy = o.y * ambCanvas.height + (mouseY - ambCanvas.height / 2) * 0.05;
+        const grad = ambCtx.createRadialGradient(cx, cy, 10, cx, cy, o.r);
+        grad.addColorStop(0, o.color);
+        grad.addColorStop(1, 'transparent');
+        ambCtx.fillStyle = grad;
+        ambCtx.beginPath();
+        ambCtx.arc(cx, cy, o.r, 0, Math.PI * 2);
+        ambCtx.fill();
+      });
+      requestAnimationFrame(drawAmbient);
+    }
+    drawAmbient();
+
+    // 4. LIVE MINI-SIMULATION PREVIEWS INSIDE EACH CARD
+    function setupMiniCanvases() {
+      // Card 1: Boat River Preview
+      const cBoat = document.getElementById('previewBoat');
+      const ctxB = cBoat.getContext('2d');
+      cBoat.width = 480; cBoat.height = 210;
+
+      // Card 2: Pendulum Preview
+      const cPend = document.getElementById('previewPendulum');
+      const ctxP = cPend.getContext('2d');
+      cPend.width = 480; cPend.height = 210;
+
+      // Card 3: Gas Law Preview
+      const cGas = document.getElementById('previewGas');
+      const ctxG = cGas.getContext('2d');
+      cGas.width = 480; cGas.height = 210;
+      const gasDots = Array.from({ length: 26 }, () => ({
+        x: 40 + Math.random() * 400,
+        y: 30 + Math.random() * 150,
+        vx: (Math.random() - 0.5) * 3.2,
+        vy: (Math.random() - 0.5) * 3.2
+      }));
+
+      // Card 4: Calculus Tangent Preview
+      const cMath = document.getElementById('previewMath');
+      const ctxM = cMath.getContext('2d');
+      cMath.width = 480; cMath.height = 210;
+
+      let t = 0;
+      function renderPreviews() {
+        t += 0.025;
+
+        // 1. BOAT RIVER MINI-SIM
+        ctxB.clearRect(0, 0, 480, 210);
+        ctxB.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+        ctxB.lineWidth = 1.5;
+        for (let y = 35; y < 185; y += 30) {
+          const offset = (t * 40 + y) % 60;
+          ctxB.beginPath();
+          for (let x = -60; x < 480; x += 60) {
+            ctxB.moveTo(x + offset, y);
+            ctxB.lineTo(x + offset + 28, y);
+          }
+          ctxB.stroke();
+        }
+        const progress = (t * 0.45) % 1;
+        const bx = 140 + progress * 150;
+        const by = 175 - progress * 135;
+        ctxB.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+        ctxB.setLineDash([4, 4]);
+        ctxB.beginPath(); ctxB.moveTo(140, 175); ctxB.lineTo(bx, by); ctxB.stroke();
+        ctxB.setLineDash([]);
+        ctxB.fillStyle = '#38bdf8';
+        ctxB.beginPath(); ctxB.arc(bx, by, 7, 0, Math.PI * 2); ctxB.fill();
+
+        // 2. PENDULUM MINI-SIM
+        ctxP.clearRect(0, 0, 480, 210);
+        const angle = 0.65 * Math.cos(t * 1.4);
+        const px = 210, py = 25, len = 135;
+        const bobX = px + Math.sin(angle) * len;
+        const bobY = py + Math.cos(angle) * len;
+        ctxP.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctxP.lineWidth = 2;
+        ctxP.beginPath(); ctxP.moveTo(px, py); ctxP.lineTo(bobX, bobY); ctxP.stroke();
+        ctxP.fillStyle = '#38bdf8';
+        ctxP.beginPath(); ctxP.arc(bobX, bobY, 12, 0, Math.PI * 2); ctxP.fill();
+        // Mini energy bars
+        const pe = Math.abs(Math.sin(angle / 2));
+        const ke = 1 - pe;
+        ctxP.fillStyle = '#34d399'; ctxP.fillRect(365, 165 - ke * 90, 16, ke * 90);
+        ctxP.fillStyle = '#c084fc'; ctxP.fillRect(390, 165 - pe * 90, 16, pe * 90);
+
+        // 3. IDEAL GAS MINI-SIM
+        ctxG.clearRect(0, 0, 480, 210);
+        ctxG.fillStyle = '#34d399';
+        gasDots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 20 || d.x > 460) d.vx *= -1;
+          if (d.y < 20 || d.y > 190) d.vy *= -1;
+          ctxG.beginPath(); ctxG.arc(d.x, d.y, 4.5, 0, Math.PI * 2); ctxG.fill();
+        });
+
+        // 4. CALCULUS TANGENT MINI-SIM
+        ctxM.clearRect(0, 0, 480, 210);
+        ctxM.strokeStyle = '#c084fc';
+        ctxM.lineWidth = 2.5;
+        ctxM.beginPath();
+        for (let x = 0; x <= 480; x += 4) {
+          const nx = (x - 240) / 70;
+          const y = 125 - Math.sin(nx) * 45;
+          x === 0 ? ctxM.moveTo(x, y) : ctxM.lineTo(x, y);
+        }
+        ctxM.stroke();
+        const h = 0.15 + (Math.sin(t) + 1) * 0.7;
+        const x0 = -0.6, y0 = Math.sin(x0);
+        const x1 = x0 + h, y1 = Math.sin(x1);
+        const slope = (y1 - y0) / h;
+        ctxM.strokeStyle = '#f59e0b';
+        ctxM.lineWidth = 1.8;
+        ctxM.beginPath();
+        [-3, 3].forEach((val, idx) => {
+          const sx = 240 + val * 70;
+          const sy = 125 - (y0 + slope * (val - x0)) * 45;
+          idx === 0 ? ctxM.moveTo(sx, sy) : ctxM.lineTo(sx, sy);
+        });
+        ctxM.stroke();
+
+        requestAnimationFrame(renderPreviews);
+      }
+      renderPreviews();
+    }
+    setupMiniCanvases();
+
+    // 5. FILTER TABS & INSTANT SEARCH
     const tabs = document.querySelectorAll('.tab');
-    const cards = document.querySelectorAll('.card');
+    const cards = document.querySelectorAll('.sim-card');
     const searchInput = document.getElementById('searchInput');
     let activeFilter = 'all';
 
     function filterCards() {
-      const query = searchInput.value.toLowerCase().trim();
+      const q = searchInput.value.toLowerCase().trim();
       cards.forEach(card => {
-        const subject = card.dataset.subject;
+        const subj = card.dataset.subject;
         const text = (card.innerText + ' ' + card.dataset.keywords).toLowerCase();
-        const matchesTab = activeFilter === 'all' || subject === activeFilter;
-        const matchesSearch = !query || text.includes(query);
-        card.style.display = (matchesTab && matchesSearch) ? 'flex' : 'none';
+        const matchTab = activeFilter === 'all' || subj === activeFilter;
+        const matchSearch = !q || text.includes(q);
+        card.style.display = (matchTab && matchSearch) ? 'flex' : 'none';
       });
     }
 
@@ -243,18 +1510,62 @@
         filterCards();
       });
     });
-
     searchInput.addEventListener('input', filterCards);
 
-    // Dynamically update ZIP link if username or repo changes
+    // 6. ACCORDION LOGIC
+    document.querySelectorAll('.acc-trigger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const content = item.querySelector('.acc-content');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.acc-item').forEach(i => {
+          i.classList.remove('open');
+          i.querySelector('.acc-content').style.maxHeight = null;
+        });
+        if (!isOpen) {
+          item.classList.add('open');
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    });
+
+    // 7. SCROLL REVEAL & PROGRESS BAR
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      document.getElementById('scrollProgress').style.width = ((scrolled / max) * 100) + '%';
+    });
+
+    // 8. LIVE CLOCK, COPY LINK BUTTON & AUTO GITHUB ZIP DETECTION
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = 'LOCAL TIME // ' + now.toTimeString().split(' ')[0];
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    document.getElementById('copyUrlBtn').addEventListener('click', function () {
+      navigator.clipboard.writeText(window.location.href);
+      const orig = this.textContent;
+      this.textContent = '✓ Portal Link Copied!';
+      setTimeout(() => { this.textContent = orig; }, 2000);
+    });
+
     const host = window.location.hostname;
     if (host.endsWith('.github.io')) {
-      const username = host.split('.')[0];
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      if (pathParts.length > 0) {
-        const repo = pathParts[0];
-        const zipBtn = document.getElementById('zipDownloadBtn');
-        zipBtn.href = `https://github.com/${username}/${repo}/archive/refs/heads/main.zip`;
+      const user = host.split('.')[0];
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      if (parts.length > 0) {
+        const zipUrl = `https://github.com/${user}/${parts[0]}/archive/refs/heads/main.zip`;
+        document.getElementById('navZipBtn').href = zipUrl;
+        document.getElementById('heroZipBtn').href = zipUrl;
       }
     }
   </script>
