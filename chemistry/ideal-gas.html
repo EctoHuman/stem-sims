@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ideal Gas Law Lab (PV = nRT)</title>
+  <style>
+    :root { --bg: #0f172a; --panel: #1e293b; --border: #334155; --text: #f8fafc; --muted: #94a3b8; --accent: #34d399; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-wrap: wrap; min-height: 100vh; padding: 1.25rem; gap: 1.25rem; }
+    .canvas-wrap { flex: 1 1 560px; background: #090d16; border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: relative; }
+    canvas { background: #0f172a; border: 2px solid #475569; border-radius: 8px; max-width: 100%; }
+    .controls { flex: 0 1 360px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.35rem; display: flex; flex-direction: column; gap: 1.1rem; }
+    h1 { font-size: 1.25rem; color: var(--accent); }
+    .readout { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .stat { font-size: 0.82rem; color: var(--muted); }
+    .stat strong { display: block; font-size: 1.15rem; color: var(--text); margin-top: 0.15rem; }
+    .control-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    label { font-size: 0.88rem; display: flex; justify-content: space-between; font-weight: 600; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .btn-row { display: flex; gap: 0.6rem; margin-top: auto; }
+    button, .back-link { flex: 1; padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: #334155; color: var(--text); font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; font-size: 0.88rem; }
+    button.primary { background: var(--accent); color: #0f172a; border: none; }
+  </style>
+</head>
+<body>
+  <div class="canvas-wrap">
+    <canvas id="simCanvas" width="600" height="420"></canvas>
+  </div>
+
+  <aside class="controls">
+    <h1>Ideal Gas Law (PV = nRT)</h1>
+    <div class="readout">
+      <div class="stat">Pressure (P)<strong id="pVal">1.00 atm</strong></div>
+      <div class="stat">Volume (V)<strong id="vVal">10.0 L</strong></div>
+      <div class="stat">Moles (n)<strong id="nVal">0.50 mol</strong></div>
+      <div class="stat">Temperature (T)<strong id="tVal">300 K</strong></div>
+    </div>
+
+    <div class="control-group">
+      <label><span>Particles / Moles (n)</span><span id="nLbl">50</span></label>
+      <input type="range" id="nSlider" min="10" max="150" value="50" />
+    </div>
+
+    <div class="control-group">
+      <label><span>Temperature (T)</span><span id="tLbl">300 K</span></label>
+      <input type="range" id="tSlider" min="100" max="800" value="300" />
+    </div>
+
+    <div class="control-group">
+      <label><span>Container Volume (V)</span><span id="vLbl">10.0 L</span></label>
+      <input type="range" id="vSlider" min="4" max="15" step="0.5" value="10" />
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="resetBtn">Reset Lab</button>
+      <a href="../index.html" class="back-link">← Hub</a>
+    </div>
+  </aside>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const nSlider = document.getElementById('nSlider');
+    const tSlider = document.getElementById('tSlider');
+    const vSlider = document.getElementById('vSlider');
+
+    let particles = [];
+    const R = 0.08206;
+
+    function syncParticles() {
+      const target = parseInt(nSlider.value, 10);
+      const wallX = getWallX();
+      while (particles.length < target) {
+        const angle = Math.random() * Math.PI * 2;
+        particles.push({
+          x: 40 + Math.random() * (wallX - 60),
+          y: 40 + Math.random() * (canvas.height - 80),
+          vx: Math.cos(angle),
+          vy: Math.sin(angle)
+        });
+      }
+      if (particles.length > target) particles.length = target;
+    }
+
+    function getWallX() {
+      const vol = parseFloat(vSlider.value);
+      return 120 + (vol / 15) * (canvas.width - 150);
+    }
+
+    function updateUI() {
+      const n = parseInt(nSlider.value, 10) / 100;
+      const T = parseFloat(tSlider.value);
+      const V = parseFloat(vSlider.value);
+      const P = (n * R * T) / V;
+
+      document.getElementById('nLbl').textContent = nSlider.value + ' particles';
+      document.getElementById('tLbl').textContent = T + ' K';
+      document.getElementById('vLbl').textContent = V.toFixed(1) + ' L';
+
+      document.getElementById('pVal').textContent = P.toFixed(2) + ' atm';
+      document.getElementById('vVal').textContent = V.toFixed(1) + ' L';
+      document.getElementById('nVal').textContent = n.toFixed(2) + ' mol';
+      document.getElementById('tVal').textContent = T + ' K';
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const wallX = getWallX();
+      const T = parseFloat(tSlider.value);
+      const speedScale = Math.sqrt(T / 300) * 3.2;
+
+      // Draw movable piston wall
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(wallX, 0, 14, canvas.height);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(wallX + 14, canvas.height / 2 - 12, canvas.width - wallX, 24);
+
+      // Particle color by temperature
+      const hue = Math.max(0, Math.min(220, 220 - ((T - 100) / 700) * 220));
+      ctx.fillStyle = `hsl(${hue}, 90%, 60%)`;
+
+      for (const p of particles) {
+        p.x += p.vx * speedScale;
+        p.y += p.vy * speedScale;
+
+        if (p.x < 8) { p.x = 8; p.vx *= -1; }
+        if (p.x > wallX - 8) { p.x = wallX - 8; p.vx *= -1; }
+        if (p.y < 8) { p.y = 8; p.vy *= -1; }
+        if (p.y > canvas.height - 8) { p.y = canvas.height - 8; p.vy *= -1; }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(animate);
+    }
+
+    [nSlider, tSlider, vSlider].forEach(el => el.addEventListener('input', () => {
+      syncParticles();
+      updateUI();
+    }));
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      nSlider.value = 50; tSlider.value = 300; vSlider.value = 10;
+      syncParticles(); updateUI();
+    });
+
+    syncParticles();
+    updateUI();
+    animate();
+  </script>
+</body>
+</html>
