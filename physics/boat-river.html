@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhET-Style Physics Lab: Boat-River Relative Velocity</title>
+    <style>
+        /* ==========================================================================
+           100% OFFLINE SELF-CONTAINED CSS (PhET Scientific UI Theme)
+           ========================================================================== */
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --panel-card: #334155;
+            --panel-border: #475569;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --accent-blue: #38bdf8;    /* v_br: Boat rel to River */
+            --accent-orange: #fb923c;  /* v_rg: River rel to Ground */
+            --accent-green: #4ade80;   /* v_bg: Boat rel to Ground (Resultant) */
+            --accent-purple: #c084fc;
+            --phet-orange: #f97316;
+            --danger: #ef4444;
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header Bar */
+        header {
+            height: 46px;
+            background: #090d16;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            color: white;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .preset-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preset-btn {
+            background: var(--panel-card);
+            color: var(--text-main);
+            border: 1px solid var(--panel-border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preset-btn:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        .preset-btn.active {
+            background: #0284c7;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Interactive Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #0c4a6e;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+        }
+
+        /* Floating HUD Overlays on Canvas */
+        .hud-overlay {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+        }
+
+        /* Top-Left Telemetry & Stopwatch HUD */
+        .telemetry-hud {
+            top: 14px;
+            left: 14px;
+            width: 290px;
+        }
+
+        .hud-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer-display {
+            font-family: var(--font-mono);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fde047;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(253, 224, 71, 0.3);
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer-display span.label {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            font-family: var(--font-sans);
+            font-weight: 600;
+        }
+
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .stat-box {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 6px 8px;
+            border-radius: 6px;
+            border-left: 3px solid #64748b;
+        }
+
+        .stat-box.blue { border-left-color: var(--accent-blue); }
+        .stat-box.orange { border-left-color: var(--accent-orange); }
+        .stat-box.green { border-left-color: var(--accent-green); }
+        .stat-box.purple { border-left-color: var(--accent-purple); }
+
+        .stat-label {
+            font-size: 0.68rem;
+            color: #94a3b8;
+            display: block;
+        }
+
+        .stat-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #f8fafc;
+        }
+
+        /* Top-Right Mini Vector Triangle Box */
+        .vector-hud {
+            top: 14px;
+            right: 14px;
+            width: 225px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #miniVectorCanvas {
+            width: 195px;
+            height: 145px;
+            background: rgba(2, 6, 23, 0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        .equation-pill {
+            margin-top: 7px;
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            font-weight: 700;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Bottom Floating Playback Dock (Classic PhET Style) */
+        .playback-dock {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 999px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .ctrl-btn {
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.12s ease, background 0.15s ease;
+            color: white;
+            font-weight: 700;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.93);
+        }
+
+        .play-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+        }
+
+        .play-btn.paused {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+            box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
+        }
+
+        .step-btn, .relaunch-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #334155;
+            border: 1px solid #64748b;
+        }
+
+        .step-btn:hover, .relaunch-btn:hover {
+            background: #475569;
+        }
+
+        .speed-group {
+            display: flex;
+            background: #0f172a;
+            border-radius: 999px;
+            padding: 3px;
+            border: 1px solid #334155;
+        }
+
+        .speed-opt {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .speed-opt.active {
+            background: #334155;
+            color: #38bdf8;
+        }
+
+        /* Toast Banner for Impossible Zero-Drift or Target Hit */
+        .status-banner {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #38bdf8;
+            color: #f8fafc;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            z-index: 15;
+            white-space: nowrap;
+        }
+
+        .status-banner.show {
+            opacity: 1;
+        }
+
+        /* Right Control Sidebar */
+        .sidebar {
+            width: 340px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 12px;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .control-card {
+            background: var(--panel-card);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .card-header {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            padding-bottom: 6px;
+        }
+
+        /* Sliders */
+        .slider-row {
+            margin-bottom: 12px;
+        }
+
+        .slider-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .slider-val-badge {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 7px;
+            background: #0f172a;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 3px solid #38bdf8;
+            cursor: grab;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        input[type="range"].orange-slider::-webkit-slider-thumb {
+            border-color: var(--accent-orange);
+        }
+
+        input[type="range"].purple-slider::-webkit-slider-thumb {
+            border-color: var(--accent-purple);
+        }
+
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        /* Quick Angle Nudge Buttons */
+        .angle-quick-btns {
+            display: flex;
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .mini-btn {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            font-size: 0.72rem;
+            padding: 4px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .mini-btn:hover {
+            background: #0f172a;
+            color: white;
+            border-color: #38bdf8;
+        }
+
+        /* Checkboxes & Toggles */
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: background 0.12s;
+        }
+
+        .check-item:hover {
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .check-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .check-left input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #38bdf8;
+            cursor: pointer;
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* PhET Orange Reset All Button */
+        .bottom-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .clear-trails-btn {
+            flex: 1;
+            background: #475569;
+            color: white;
+            border: 1px solid #64748b;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .clear-trails-btn:hover {
+            background: #64748b;
+        }
+
+        .phet-reset-btn {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+            transition: transform 0.12s, filter 0.15s;
+        }
+
+        .phet-reset-btn:hover {
+            filter: brightness(1.08);
+        }
+
+        .phet-reset-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Responsive adjustments for smaller laptops/tablets */
+        @media (max-width: 960px) {
+            .workspace {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 42%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                border-left: none;
+                border-top: 1px solid var(--panel-border);
+            }
+            .control-card {
+                flex: 1 1 280px;
+            }
+            .telemetry-hud {
+                width: 240px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== TOP BAR ==================== -->
+    <header>
+        <div class="brand">
+            <span class="brand-badge">Physics I Lab</span>
+            <span>Relative Velocity in 2D: The Boat-River Problem</span>
+        </div>
+        <div class="preset-bar">
+            <button class="preset-btn active" id="presetFree" onclick="applyPreset('free')">
+                <span>🧭</span> Free Explore
+            </button>
+            <button class="preset-btn" id="presetShortestTime" onclick="applyPreset('shortestTime')" title="Aim straight North (θ = 0°) to cross in minimum time">
+                <span>⏱️</span> Shortest Time (θ = 0°)
+            </button>
+            <button class="preset-btn" id="presetZeroDrift" onclick="applyPreset('zeroDrift')" title="Aim upstream so horizontal velocity cancels river current (Δx = 0)">
+                <span>🎯</span> Shortest Path (Zero Drift)
+            </button>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN WORKSPACE ==================== -->
+    <div class="workspace">
+        <!-- Interactive Simulation Canvas -->
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="simCanvas"></canvas>
+
+            <!-- Dynamic Alert / Status Pill -->
+            <div id="statusBanner" class="status-banner"></div>
+
+            <!-- Top-Left Live Telemetry & Stopwatch HUD -->
+            <div class="hud-overlay telemetry-hud">
+                <div class="hud-title">
+                    <span>Live Telemetry & Predictions</span>
+                    <span id="simStateBadge" style="color:#38bdf8;">READY</span>
+                </div>
+                <div class="timer-display">
+                    <span class="label">ELAPSED TIME (t)</span>
+                    <span id="readoutTime">0.00 s</span>
+                </div>
+                <div class="telemetry-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Boat Position (x, y)</span>
+                        <span class="stat-val" id="readoutPos">(0.0, 0.0) m</span>
+                    </div>
+                    <div class="stat-box purple">
+                        <span class="stat-label">Predicted Cross Time</span>
+                        <span class="stat-val" id="readoutCrossTime">10.00 s</span>
+                    </div>
+                    <div class="stat-box green">
+                        <span class="stat-label">Ground Speed |v_bg|</span>
+                        <span class="stat-val" id="readoutGroundSpeed">10.77 m/s</span>
+                    </div>
+                    <div class="stat-box orange">
+                        <span class="stat-label">Total Drift (Δx)</span>
+                        <span class="stat-val" id="readoutDrift">+40.0 m</span>
+                    </div>
+                    <div class="stat-box blue">
+                        <span class="stat-label">v_bg,x (East/West)</span>
+                        <span class="stat-val" id="readoutVx">+4.00 m/s</span>
+                    </div>
+                    <div class="stat-box blue">
+                        <span class="stat-label">v_bg,y (Northward)</span>
+                        <span class="stat-val" id="readoutVy">+10.00 m/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top-Right Vector Addition Triangle HUD -->
+            <div class="hud-overlay vector-hud" id="vectorHudBox">
+                <div class="hud-title" style="width:100%;">
+                    <span>Vector Addition</span>
+                    <span style="font-family:var(--font-mono); color:#cbd5e1;">θ = <span id="hudAngleVal">0.0°</span></span>
+                </div>
+                <canvas id="miniVectorCanvas" width="195" height="145"></canvas>
+                <div class="equation-pill">
+                    <span style="color:var(--accent-green)">v&#8407;<sub>bg</sub></span> =
+                    <span style="color:var(--accent-blue)">v&#8407;<sub>br</sub></span> +
+                    <span style="color:var(--accent-orange)">v&#8407;<sub>rg</sub></span>
+                </div>
+            </div>
+
+            <!-- Bottom Floating Playback Controls -->
+            <div class="playback-dock">
+                <button class="ctrl-btn relaunch-btn" onclick="resetBoatToDock()" title="Return Boat to Launch Dock (Keep Settings)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                </button>
+
+                <button class="ctrl-btn play-btn" id="playPauseBtn" onclick="togglePlay()" title="Play / Pause Simulation (Spacebar)">
+                    <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="6 4 20 12 6 20 6 4"/>
+                    </svg>
+                    <svg id="pauseIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                </button>
+
+                <button class="ctrl-btn step-btn" onclick="stepForward()" title="Step Forward +0.05s">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 4 15 12 5 20 5 4" fill="currentColor"/>
+                        <line x1="19" y1="5" x2="19" y2="19"/>
+                    </svg>
+                </button>
+
+                <div class="speed-group" title="Simulation Playback Speed">
+                    <button class="speed-opt" id="speed05" onclick="setSimSpeed(0.5)">0.5×</button>
+                    <button class="speed-opt active" id="speed10" onclick="setSimSpeed(1.0)">1×</button>
+                    <button class="speed-opt" id="speed20" onclick="setSimSpeed(2.0)">2×</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== RIGHT CONTROL SIDEBAR ==================== -->
+        <aside class="sidebar">
+            <!-- Kinematics Parameters Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <span>1. Boat & River Parameters</span>
+                </div>
+
+                <!-- Boat Speed relative to water (v_br) -->
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span style="color:var(--accent-blue)">Boat Speed in Water (v<sub>br</sub>)</span>
+                        <span class="slider-val-badge" id="valVbr">10.0 m/s</span>
+                    </div>
+                    <input type="range" id="sliderVbr" min="1.0" max="15.0" step="0.5" value="10.0">
+                    <div class="slider-ticks">
+                        <span>1 m/s</span>
+                        <span>8 m/s</span>
+                        <span>15 m/s</span>
+                    </div>
+                </div>
+
+                <!-- River Current Speed (v_rg) -->
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span style="color:var(--accent-orange)">River Current Speed (v<sub>rg</sub>)</span>
+                        <span class="slider-val-badge" id="valVrg">4.0 m/s</span>
+                    </div>
+                    <input type="range" class="orange-slider" id="sliderVrg" min="0.0" max="12.0" step="0.5" value="4.0">
+                    <div class="slider-ticks">
+                        <span>0 m/s (Still)</span>
+                        <span>6 m/s</span>
+                        <span>12 m/s</span>
+                    </div>
+                </div>
+
+                <!-- Boat Heading Angle (theta) -->
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Heading Angle (θ)</span>
+                        <span class="slider-val-badge" id="valTheta">0.0° (North)</span>
+                    </div>
+                    <input type="range" id="sliderTheta" min="-75" max="75" step="0.5" value="0">
+                    <div class="slider-ticks">
+                        <span>-75° (Upstream)</span>
+                        <span>0° (Across)</span>
+                        <span>+75° (Downstream)</span>
+                    </div>
+                    <div class="angle-quick-btns">
+                        <button class="mini-btn" onclick="setHeadingAngle(-45)">-45°</button>
+                        <button class="mini-btn" onclick="setHeadingAngle(-30)">-30°</button>
+                        <button class="mini-btn" onclick="setHeadingAngle(0)">0°</button>
+                        <button class="mini-btn" onclick="setHeadingAngle(30)">+30°</button>
+                        <button class="mini-btn" onclick="setZeroDriftAngle()" title="Calculate exact θ = -arcsin(v_rg / v_br)">θ<sub>zero</sub></button>
+                    </div>
+                </div>
+
+                <!-- River Width (W) -->
+                <div class="slider-row" style="margin-top:10px;">
+                    <div class="slider-header">
+                        <span style="color:var(--accent-purple)">River Width (W)</span>
+                        <span class="slider-val-badge" id="valWidth">100 m</span>
+                    </div>
+                    <input type="range" class="purple-slider" id="sliderWidth" min="50" max="250" step="10" value="100">
+                    <div class="slider-ticks">
+                        <span>50 m</span>
+                        <span>150 m</span>
+                        <span>250 m</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vectors & Visual Overlays Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <span>2. Velocity Vectors & Overlays</span>
+                </div>
+                <div class="checkbox-list">
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkVbr" checked>
+                            <span>Boat rel. River (<b>v&#8407;<sub>br</sub></b>)</span>
+                        </span>
+                        <span class="color-dot" style="background:var(--accent-blue)"></span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkVrg" checked>
+                            <span>River rel. Ground (<b>v&#8407;<sub>rg</sub></b>)</span>
+                        </span>
+                        <span class="color-dot" style="background:var(--accent-orange)"></span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkVbg" checked>
+                            <span>Resultant Ground (<b>v&#8407;<sub>bg</sub></b>)</span>
+                        </span>
+                        <span class="color-dot" style="background:var(--accent-green)"></span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkTriangle" checked>
+                            <span>Tip-to-Tail Vector Triangle</span>
+                        </span>
+                        <span class="color-dot" style="background:#f8fafc; border:1px dashed #94a3b8;"></span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkComponents">
+                            <span>Show (v<sub>x</sub>, v<sub>y</sub>) Components</span>
+                        </span>
+                        <span class="color-dot" style="background:#94a3b8;"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Lab Measurement Tools Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <span>3. Lab Tools & Grid</span>
+                </div>
+                <div class="checkbox-list">
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkGrid" checked>
+                            <span>Coordinate Grid & Scale (m)</span>
+                        </span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkGhost" checked>
+                            <span>Keep Previous Run Trail</span>
+                        </span>
+                    </label>
+                    <label class="check-item">
+                        <span class="check-left">
+                            <input type="checkbox" id="chkRuler">
+                            <span>📏 Draggable Measuring Tape</span>
+                        </span>
+                    </label>
+                </div>
+                <div style="margin-top:8px; font-size:0.73rem; color:#94a3b8; line-height:1.35;">
+                    💡 <b>Tip:</b> Drag the cyan <b>v&#8407;<sub>br</sub></b> arrow tip directly on the boat to aim, or drag the <b>Red Target Dock</b> along the North Bank!
+                </div>
+            </div>
+
+            <!-- Bottom Reset Actions -->
+            <div class="bottom-actions">
+                <button class="clear-trails-btn" onclick="clearGhostTrails()" title="Clear saved comparison paths">
+                    Clear Trails
+                </button>
+                <button class="phet-reset-btn" onclick="resetAll()" title="Reset All Settings to Default">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    Reset All
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ==================== PHYSICS & RENDERING ENGINE ==================== -->
+    <script>
+        /* ==========================================================================
+           STATE & CONFIGURATION
+           ========================================================================== */
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const miniCanvas = document.getElementById('miniVectorCanvas');
+        const miniCtx = miniCanvas.getContext('2d');
+
+        const state = {
+            // Physics Parameters
+            v_br: 10.0,         // Boat speed relative to water (m/s)
+            v_rg: 4.0,          // River speed relative to ground (m/s, East/+x)
+            thetaDeg: 0.0,      // Boat heading angle in degrees (0 = North/+y, - = West, + = East)
+            riverWidth: 100.0,  // River width W in meters
+
+            // Dynamic Boat State
+            x: 0.0,             // Current horizontal displacement from launch dock (m)
+            y: 0.0,             // Current vertical distance across river (m)
+            t: 0.0,             // Elapsed time (s)
+            isPlaying: false,
+            hasLanded: false,
+            simSpeed: 1.0,
+
+            // Trails & Comparison History
+            currentTrail: [],   // Array of {x, y} points for active run
+            ghostTrails: [],    // Array of previous runs: { points: [{x,y}], thetaDeg, v_br, v_rg, drift, time }
+
+            // Interactive Canvas Objects
+            targetX: 40.0,      // Draggable target flag position on North Bank (m)
+            draggingMode: null, // 'heading' | 'target' | 'rulerP1' | 'rulerP2' | 'rulerBody'
+
+            // Draggable Measuring Tape (in meters relative to origin)
+            ruler: {
+                enabled: false,
+                x1: -40, y1: 0,
+                x2: 40,  y2: 100,
+                dragOffsetX: 0,
+                dragOffsetY: 0
+            },
+
+            // Water Stream Particles (Normalized coordinates)
+            waterParticles: [],
+            waveOffset: 0
+        };
+
+        // Initialize 95 flowing water particles
+        for (let i = 0; i < 95; i++) {
+            state.waterParticles.push({
+                nx: Math.random(),          // 0..1 across screen width
+                ny: Math.random(),          // 0..1 across river width
+                len: 18 + Math.random() * 28,
+                alpha: 0.12 + Math.random() * 0.25,
+                speedMult: 0.85 + Math.random() * 0.3
+            });
+        }
+
+        /* ==========================================================================
+           COORDINATE SYSTEM & SCALING (World Meters <-> Canvas Pixels)
+           ========================================================================== */
+        let view = {
+            originX: 0,      // Pixel X of Launch Dock (0, 0)
+            southBankY: 0,   // Pixel Y of South Bank (y = 0)
+            northBankY: 0,   // Pixel Y of North Bank (y = W)
+            pxPerMeter: 2.5  // Dynamic scale factor
+        };
+
+        function updateViewportMetrics() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const w = rect.width;
+            const h = rect.height;
+
+            // Keep banks comfortably padded for top HUD and bottom playback bar
+            view.southBankY = h - 105;
+            view.northBankY = 125;
+            const riverPixelHeight = Math.max(160, view.southBankY - view.northBankY);
+
+            view.pxPerMeter = riverPixelHeight / state.riverWidth;
+            view.originX = w * 0.42; // Slightly left of center since current flows East (+x)
+        }
+
+        function worldToScreen(wx, wy) {
+            return {
+                px: view.originX + wx * view.pxPerMeter,
+                py: view.southBankY - wy * view.pxPerMeter
+            };
+        }
+
+        function screenToWorld(px, py) {
+            return {
+                wx: (px - view.originX) / view.pxPerMeter,
+                wy: (view.southBankY - py) / view.pxPerMeter
+            };
+        }
+
+        /* ==========================================================================
+           PHYSICS CALCULATIONS
+           ========================================================================== */
+        function getKinematics() {
+            const rad = (state.thetaDeg * Math.PI) / 180;
+            // Boat velocity relative to water
+            const v_br_x = state.v_br * Math.sin(rad);
+            const v_br_y = state.v_br * Math.cos(rad);
+
+            // River velocity relative to ground (flowing East / +x)
+            const v_rg_x = state.v_rg;
+            const v_rg_y = 0;
+
+            // Resultant boat velocity relative to ground: v_bg = v_br + v_rg
+            const v_bg_x = v_br_x + v_rg_x;
+            const v_bg_y = v_br_y + v_rg_y;
+            const speed_bg = Math.hypot(v_bg_x, v_bg_y);
+
+            // Crossing time & predicted horizontal drift
+            const crossTime = v_bg_y > 0.001 ? state.riverWidth / v_bg_y : Infinity;
+            const totalDrift = v_bg_x * crossTime;
+
+            return {
+                rad,
+                v_br_x, v_br_y,
+                v_rg_x, v_rg_y,
+                v_bg_x, v_bg_y,
+                speed_bg,
+                crossTime,
+                totalDrift
+            };
+        }
+
+        function stepPhysics(dt) {
+            const kin = getKinematics();
+            if (state.hasLanded) return;
+
+            // Record initial point if trail is empty
+            if (state.currentTrail.length === 0) {
+                state.currentTrail.push({ x: state.x, y: state.y });
+            }
+
+            const nextT = state.t + dt;
+            const nextY = state.y + kin.v_bg_y * dt;
+            const nextX = state.x + kin.v_bg_x * dt;
+
+            // Check if boat reaches the North Bank (y >= riverWidth)
+            if (nextY >= state.riverWidth) {
+                const remainingY = state.riverWidth - state.y;
+                const exactDt = kin.v_bg_y > 0 ? remainingY / kin.v_bg_y : 0;
+                state.t += exactDt;
+                state.y = state.riverWidth;
+                state.x += kin.v_bg_x * exactDt;
+                state.currentTrail.push({ x: state.x, y: state.y });
+
+                state.hasLanded = true;
+                state.isPlaying = false;
+                updatePlayButtonUI();
+
+                // Check if boat hit the draggable target flag!
+                const distToTarget = Math.abs(state.x - state.targetX);
+                if (distToTarget <= 3.5) {
+                    showBanner(`🎯 Bullseye! Landed at x = ${state.x.toFixed(1)} m (Target Hit!)`, '#4ade80');
+                } else {
+                    showBanner(`⚓ Docked on North Bank! Time: ${state.t.toFixed(2)} s | Drift Δx: ${state.x >= 0 ? '+' : ''}${state.x.toFixed(1)} m`, '#38bdf8');
+                }
+            } else {
+                state.t = nextT;
+                state.x = nextX;
+                state.y = nextY;
+
+                // Sample trail points every ~1.5 meters
+                const lastPt = state.currentTrail[state.currentTrail.length - 1];
+                if (!lastPt || Math.hypot(state.x - lastPt.x, state.y - lastPt.y) > 1.5) {
+                    state.currentTrail.push({ x: state.x, y: state.y });
+                }
+            }
+
+            updateTelemetryDOM();
+        }
+
+        /* ==========================================================================
+           UI & TELEMETRY UPDATES
+           ========================================================================== */
+        function updateTelemetryDOM() {
+            const kin = getKinematics();
+
+            document.getElementById('readoutTime').textContent = `${state.t.toFixed(2)} s`;
+            document.getElementById('readoutPos').textContent = `(${state.x.toFixed(1)}, ${state.y.toFixed(1)}) m`;
+            document.getElementById('readoutCrossTime').textContent = `${kin.crossTime.toFixed(2)} s`;
+            document.getElementById('readoutGroundSpeed').textContent = `${kin.speed_bg.toFixed(2)} m/s`;
+
+            const driftSign = kin.totalDrift >= 0 ? '+' : '';
+            document.getElementById('readoutDrift').textContent = `${driftSign}${kin.totalDrift.toFixed(1)} m`;
+
+            const vxSign = kin.v_bg_x >= 0 ? '+' : '';
+            document.getElementById('readoutVx').textContent = `${vxSign}${kin.v_bg_x.toFixed(2)} m/s`;
+            document.getElementById('readoutVy').textContent = `+${kin.v_bg_y.toFixed(2)} m/s`;
+
+            // Update Slider Value Badges
+            document.getElementById('valVbr').textContent = `${state.v_br.toFixed(1)} m/s`;
+            document.getElementById('valVrg').textContent = `${state.v_rg.toFixed(1)} m/s`;
+
+            let dirText = 'North';
+            if (state.thetaDeg < -0.2) dirText = 'W of N';
+            else if (state.thetaDeg > 0.2) dirText = 'E of N';
+            const angleSign = state.thetaDeg > 0 ? '+' : '';
+            document.getElementById('valTheta').textContent = `${angleSign}${state.thetaDeg.toFixed(1)}° (${dirText})`;
+            document.getElementById('hudAngleVal').textContent = `${angleSign}${state.thetaDeg.toFixed(1)}°`;
+            document.getElementById('valWidth').textContent = `${state.riverWidth.toFixed(0)} m`;
+
+            // Status Badge
+            const badge = document.getElementById('simStateBadge');
+            if (state.hasLanded) {
+                badge.textContent = 'ARRIVED';
+                badge.style.color = '#4ade80';
+            } else if (state.isPlaying) {
+                badge.textContent = 'RUNNING';
+                badge.style.color = '#fde047';
+            } else if (state.t > 0) {
+                badge.textContent = 'PAUSED';
+                badge.style.color = '#fb923c';
+            } else {
+                badge.textContent = 'READY';
+                badge.style.color = '#38bdf8';
+            }
+        }
+
+        let bannerTimeout = null;
+        function showBanner(msg, borderColor = '#38bdf8') {
+            const banner = document.getElementById('statusBanner');
+            banner.textContent = msg;
+            banner.style.borderColor = borderColor;
+            banner.classList.add('show');
+            if (bannerTimeout) clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                banner.classList.remove('show');
+            }, 4200);
+        }
+
+        /* ==========================================================================
+           CANVAS DRAWING HELPERS
+           ========================================================================== */
+        function drawVectorArrow(context, x1, y1, x2, y2, color, label, lineWidth = 3, dashed = false) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 4) return;
+
+            const angle = Math.atan2(dy, dx);
+            const headLen = Math.min(13, Math.max(8, len * 0.28));
+
+            context.save();
+            context.strokeStyle = color;
+            context.fillStyle = color;
+            context.lineWidth = lineWidth;
+            context.lineCap = 'round';
+            if (dashed) context.setLineDash([5, 4]);
+
+            // Subtle shadow for high contrast over water
+            context.shadowColor = 'rgba(0, 0, 0, 0.55)';
+            context.shadowBlur = 4;
+
+            // Shaft
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.lineTo(x2 - Math.cos(angle) * (headLen * 0.6), y2 - Math.sin(angle) * (headLen * 0.6));
+            context.stroke();
+
+            // Arrowhead
+            context.setLineDash([]);
+            context.beginPath();
+            context.moveTo(x2, y2);
+            context.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6.5), y2 - headLen * Math.sin(angle - Math.PI / 6.5));
+            context.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6.5), y2 - headLen * Math.sin(angle + Math.PI / 6.5));
+            context.closePath();
+            context.fill();
+
+            // Label pill
+            if (label) {
+                const midX = (x1 + x2) / 2 + Math.cos(angle - Math.PI / 2) * 16;
+                const midY = (y1 + y2) / 2 + Math.sin(angle - Math.PI / 2) * 16;
+                context.font = 'bold 12px system-ui, sans-serif';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillStyle = '#f8fafc';
+                context.shadowColor = 'rgba(0,0,0,0.85)';
+                context.shadowBlur = 5;
+                context.fillText(label, midX, midY);
+            }
+            context.restore();
+        }
+
+        function drawBoatGraphic(px, py, headingRad) {
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(headingRad); // 0 rad = pointing straight up (-y in screen coords)
+
+            // Drop shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetY = 3;
+
+            // Outer Hull (Sleek PhET speedboat shape)
+            ctx.beginPath();
+            ctx.moveTo(0, -24); // Bow tip
+            ctx.bezierCurveTo(13, -10, 14, 10, 10, 20); // Starboard side
+            ctx.lineTo(-10, 20); // Stern
+            ctx.bezierCurveTo(-14, 10, -13, -10, 0, -24); // Port side
+            ctx.closePath();
+            ctx.fillStyle = '#f8fafc';
+            ctx.fill();
+            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = '#0284c7';
+            ctx.stroke();
+
+            // Inner Deck Accent
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.moveTo(0, -16);
+            ctx.bezierCurveTo(8, -6, 9, 8, 7, 15);
+            ctx.lineTo(-7, 15);
+            ctx.bezierCurveTo(-9, 8, -8, -6, 0, -16);
+            ctx.closePath();
+            ctx.fillStyle = '#bae6fd';
+            ctx.fill();
+
+            // Windshield
+            ctx.beginPath();
+            ctx.moveTo(-7, -3);
+            ctx.quadraticCurveTo(0, -9, 7, -3);
+            ctx.lineTo(5, 2);
+            ctx.quadraticCurveTo(0, -2, -5, 2);
+            ctx.closePath();
+            ctx.fillStyle = '#0369a1';
+            ctx.fill();
+
+            // Outboard Motor at Stern
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(-4, 20, 8, 5);
+
+            ctx.restore();
+        }
+
+        /* ==========================================================================
+           MAIN SCENE RENDERING
+           ========================================================================== */
+        function renderScene(dt) {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            ctx.clearRect(0, 0, w, h);
+
+            const kin = getKinematics();
+
+            // 1. Draw River Water Background Gradient
+            const waterGrad = ctx.createLinearGradient(0, view.northBankY, 0, view.southBankY);
+            waterGrad.addColorStop(0, '#0369a1');
+            waterGrad.addColorStop(0.5, '#0284c7');
+            waterGrad.addColorStop(1, '#0369a1');
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, view.northBankY, w, view.southBankY - view.northBankY);
+
+            // 2. Animate & Draw Flowing River Stream Particles
+            const flowPxPerSec = state.v_rg * view.pxPerMeter * (state.isPlaying ? state.simSpeed : 0.45);
+            ctx.save();
+            ctx.lineCap = 'round';
+            for (let p of state.waterParticles) {
+                p.nx += (flowPxPerSec * p.speedMult * dt) / w;
+                if (p.nx > 1.05) p.nx = -0.05;
+
+                const px = p.nx * w;
+                const py = view.northBankY + 14 + p.ny * (view.southBankY - view.northBankY - 28);
+
+                ctx.strokeStyle = `rgba(186, 230, 253, ${p.alpha})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(px + p.len, py);
+                ctx.stroke();
+
+                // Small chevron on faster currents
+                if (state.v_rg > 0.5 && p.alpha > 0.25) {
+                    ctx.beginPath();
+                    ctx.moveTo(px + p.len - 4, py - 3);
+                    ctx.lineTo(px + p.len, py);
+                    ctx.lineTo(px + p.len - 4, py + 3);
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+
+            // 3. Draw North & South Grassy Riverbanks
+            // North Bank (y >= W)
+            const northGrad = ctx.createLinearGradient(0, 0, 0, view.northBankY);
+            northGrad.addColorStop(0, '#14532d');
+            northGrad.addColorStop(1, '#15803d');
+            ctx.fillStyle = northGrad;
+            ctx.fillRect(0, 0, w, view.northBankY);
+
+            // Sandy shoreline strip North
+            ctx.fillStyle = '#fde68a';
+            ctx.fillRect(0, view.northBankY - 6, w, 6);
+
+            // South Bank (y <= 0)
+            const southGrad = ctx.createLinearGradient(0, view.southBankY, 0, h);
+            southGrad.addColorStop(0, '#15803d');
+            southGrad.addColorStop(1, '#14532d');
+            ctx.fillStyle = southGrad;
+            ctx.fillRect(0, view.southBankY, w, h - view.southBankY);
+
+            // Sandy shoreline strip South
+            ctx.fillStyle = '#fde68a';
+            ctx.fillRect(0, view.southBankY, w, 6);
+
+            // 4. Coordinate Grid & Bank Ruler Markings (if enabled)
+            if (document.getElementById('chkGrid').checked) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.font = '600 11px ui-monospace, monospace';
+                ctx.lineWidth = 1;
+
+                const stepMeters = state.riverWidth > 160 ? 50 : 25;
+
+                // Vertical X grid lines
+                for (let mx = -300; mx <= 600; mx += stepMeters) {
+                    const { px } = worldToScreen(mx, 0);
+                    if (px < 10 || px > w - 10) continue;
+
+                    ctx.beginPath();
+                    if (mx === 0) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                        ctx.setLineDash([6, 4]);
+                    } else {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
+                        ctx.setLineDash([]);
+                    }
+                    ctx.moveTo(px, view.northBankY);
+                    ctx.lineTo(px, view.southBankY);
+                    ctx.stroke();
+
+                    // Tick labels on North Bank
+                    ctx.setLineDash([]);
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${mx > 0 ? '+' : ''}${mx}m`, px, view.northBankY - 12);
+                }
+
+                // Horizontal Y grid lines
+                for (let my = stepMeters; my < state.riverWidth; my += stepMeters) {
+                    const { py } = worldToScreen(0, my);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
+                    ctx.beginPath();
+                    ctx.moveTo(0, py);
+                    ctx.lineTo(w, py);
+                    ctx.stroke();
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`y = ${my}m`, view.originX + 6, py - 4);
+                }
+                ctx.restore();
+            }
+
+            // 5. Draw Launch Dock (0,0) & Zero-Drift Reference Point (0, W)
+            const launchPos = worldToScreen(0, 0);
+            const straightAcrossPos = worldToScreen(0, state.riverWidth);
+
+            // Wooden Launch Pier on South Bank
+            ctx.fillStyle = '#78350f';
+            ctx.strokeStyle = '#451a03';
+            ctx.lineWidth = 2;
+            ctx.fillRect(launchPos.px - 16, launchPos.py, 32, 22);
+            ctx.strokeRect(launchPos.px - 16, launchPos.py, 32, 22);
+            ctx.fillStyle = '#fef3c7';
+            ctx.font = 'bold 11px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('START (0,0)', launchPos.px, launchPos.py + 36);
+
+            // Opposite Pier at x = 0 on North Bank
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(straightAcrossPos.px - 14, straightAcrossPos.py - 20, 28, 20);
+            ctx.strokeRect(straightAcrossPos.px - 14, straightAcrossPos.py - 20, 28, 20);
+
+            // 6. Draw Draggable Target Flag on North Bank
+            const targetScreen = worldToScreen(state.targetX, state.riverWidth);
+            ctx.save();
+            // Target bullseye circle
+            ctx.beginPath();
+            ctx.arc(targetScreen.px, targetScreen.py - 4, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+
+            // Flagpole
+            ctx.beginPath();
+            ctx.moveTo(targetScreen.px, targetScreen.py - 4);
+            ctx.lineTo(targetScreen.px, targetScreen.py - 34);
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Red Pennant Flag
+            ctx.beginPath();
+            ctx.moveTo(targetScreen.px, targetScreen.py - 34);
+            ctx.lineTo(targetScreen.px + 22, targetScreen.py - 27);
+            ctx.lineTo(targetScreen.px, targetScreen.py - 20);
+            ctx.closePath();
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+
+            ctx.fillStyle = '#fca5a5';
+            ctx.font = 'bold 11px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`🎯 Target (${state.targetX >= 0 ? '+' : ''}${state.targetX.toFixed(0)}m)`, targetScreen.px, targetScreen.py - 40);
+            ctx.restore();
+
+            // 7. Draw Saved Ghost Trails (Comparison Paths)
+            if (document.getElementById('chkGhost').checked && state.ghostTrails.length > 0) {
+                ctx.save();
+                for (let g of state.ghostTrails) {
+                    if (g.points.length < 2) continue;
+                    ctx.beginPath();
+                    const p0 = worldToScreen(g.points[0].x, g.points[0].y);
+                    ctx.moveTo(p0.px, p0.py);
+                    for (let i = 1; i < g.points.length; i++) {
+                        const pt = worldToScreen(g.points[i].x, g.points[i].y);
+                        ctx.lineTo(pt.px, pt.py);
+                    }
+                    ctx.strokeStyle = 'rgba(226, 232, 240, 0.42)';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([6, 6]);
+                    ctx.stroke();
+
+                    // Ghost landing label
+                    const last = g.points[g.points.length - 1];
+                    const endPos = worldToScreen(last.x, last.y);
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+                    ctx.fillRect(endPos.px - 46, endPos.py + 8, 92, 32);
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.font = '600 10px ui-monospace, monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`θ=${g.thetaDeg.toFixed(0)}° | t=${g.time.toFixed(1)}s`, endPos.px, endPos.py + 21);
+                    ctx.fillText(`Δx=${g.drift >= 0 ? '+' : ''}${g.drift.toFixed(1)}m`, endPos.px, endPos.py + 34);
+                }
+                ctx.restore();
+            }
+
+            // 8. Draw Predicted Line of Sight vs Resultant Path Preview (when at dock)
+            const boatScreen = worldToScreen(state.x, state.y);
+            if (state.t === 0 && !state.isPlaying) {
+                const predictedLand = worldToScreen(kin.totalDrift, state.riverWidth);
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(boatScreen.px, boatScreen.py);
+                ctx.lineTo(predictedLand.px, predictedLand.py);
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.35)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 6]);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 9. Draw Active Boat Wake Trail
+            if (state.currentTrail.length > 1) {
+                ctx.save();
+                ctx.beginPath();
+                const startPt = worldToScreen(state.currentTrail[0].x, state.currentTrail[0].y);
+                ctx.moveTo(startPt.px, startPt.py);
+                for (let i = 1; i < state.currentTrail.length; i++) {
+                    const pt = worldToScreen(state.currentTrail[i].x, state.currentTrail[i].y);
+                    ctx.lineTo(pt.px, pt.py);
+                }
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 3.5;
+                ctx.setLineDash([8, 5]);
+                ctx.shadowColor = 'rgba(74, 222, 128, 0.6)';
+                ctx.shadowBlur = 6;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 10. Draw the Boat
+            drawBoatGraphic(boatScreen.px, boatScreen.py, kin.rad);
+
+            // 11. Draw Velocity Vectors & Tip-to-Tail Triangle on Boat
+            const vecScale = 9.5; // Pixels per (m/s)
+            const showVbr = document.getElementById('chkVbr').checked;
+            const showVrg = document.getElementById('chkVrg').checked;
+            const showVbg = document.getElementById('chkVbg').checked;
+            const showTriangle = document.getElementById('chkTriangle').checked;
+            const showComponents = document.getElementById('chkComponents').checked;
+
+            const vbrTipX = boatScreen.px + kin.v_br_x * vecScale;
+            const vbrTipY = boatScreen.py - kin.v_br_y * vecScale;
+
+            const vbgTipX = boatScreen.px + kin.v_bg_x * vecScale;
+            const vbgTipY = boatScreen.py - kin.v_bg_y * vecScale;
+
+            // Optional Cartesian (vx, vy) component projections of Resultant v_bg
+            if (showComponents) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(248, 250, 252, 0.55)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                // Horizontal component v_bg,x
+                ctx.beginPath();
+                ctx.moveTo(boatScreen.px, boatScreen.py);
+                ctx.lineTo(vbgTipX, boatScreen.py);
+                ctx.lineTo(vbgTipX, vbgTipY);
+                ctx.stroke();
+                // Vertical component v_bg,y
+                ctx.beginPath();
+                ctx.moveTo(boatScreen.px, boatScreen.py);
+                ctx.lineTo(boatScreen.px, vbgTipY);
+                ctx.lineTo(vbgTipX, vbgTipY);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Boat relative to River (v_br - Cyan)
+            if (showVbr) {
+                drawVectorArrow(ctx, boatScreen.px, boatScreen.py, vbrTipX, vbrTipY, '#38bdf8', 'v_br', 3.5);
+
+                // Interactive Drag Handle Ring on v_br tip when ready/paused
+                if (!state.isPlaying) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(vbrTipX, vbrTipY, 7, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 2;
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // River relative to Ground (v_rg - Orange)
+            if (showVrg && state.v_rg > 0.05) {
+                if (showTriangle) {
+                    // Tip-to-tail: start v_rg at the tip of v_br!
+                    drawVectorArrow(ctx, vbrTipX, vbrTipY, vbgTipX, vbgTipY, '#fb923c', 'v_rg', 3.2);
+                } else {
+                    // Concurrent: start v_rg from boat center
+                    drawVectorArrow(
+                        ctx,
+                        boatScreen.px,
+                        boatScreen.py,
+                        boatScreen.px + kin.v_rg_x * vecScale,
+                        boatScreen.py,
+                        '#fb923c',
+                        'v_rg',
+                        3.2
+                    );
+                }
+            }
+
+            // Resultant Boat relative to Ground (v_bg - Green)
+            if (showVbg) {
+                drawVectorArrow(ctx, boatScreen.px, boatScreen.py, vbgTipX, vbgTipY, '#4ade80', 'v_bg', 3.8);
+            }
+
+            // 12. Draw Draggable Measuring Tape / Ruler (if enabled)
+            if (document.getElementById('chkRuler').checked) {
+                drawMeasuringTape();
+            }
+
+            // 13. Render Top-Right Mini Vector Addition Diagram
+            renderMiniVectorDiagram(kin);
+        }
+
+        function drawMeasuringTape() {
+            const p1 = worldToScreen(state.ruler.x1, state.ruler.y1);
+            const p2 = worldToScreen(state.ruler.x2, state.ruler.y2);
+
+            const dxMeters = state.ruler.x2 - state.ruler.x1;
+            const dyMeters = state.ruler.y2 - state.ruler.y1;
+            const distMeters = Math.hypot(dxMeters, dyMeters);
+
+            ctx.save();
+            // Tape line
+            ctx.beginPath();
+            ctx.moveTo(p1.px, p1.py);
+            ctx.lineTo(p2.px, p2.py);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 6;
+            ctx.stroke();
+
+            // Inner dashed ruler ticks
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 6]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Endpoints
+            for (let pt of [p1, p2]) {
+                ctx.beginPath();
+                ctx.arc(pt.px, pt.py, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#eab308';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#0f172a';
+                ctx.stroke();
+
+                // Crosshair
+                ctx.beginPath();
+                ctx.moveTo(pt.px - 4, pt.py);
+                ctx.lineTo(pt.px + 4, pt.py);
+                ctx.moveTo(pt.px, pt.py - 4);
+                ctx.lineTo(pt.px, pt.py + 4);
+                ctx.stroke();
+            }
+
+            // Distance Readout Tag in middle
+            const midX = (p1.px + p2.px) / 2;
+            const midY = (p1.py + p2.py) / 2;
+            const label = `📏 ${distMeters.toFixed(1)} m (Δx=${dxMeters.toFixed(1)}, Δy=${dyMeters.toFixed(1)})`;
+            ctx.font = 'bold 11px ui-monospace, monospace';
+            const textW = ctx.measureText(label).width + 14;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(midX - textW / 2, midY - 26, textW, 22, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#fde047';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, midX, midY - 15);
+            ctx.restore();
+        }
+
+        function renderMiniVectorDiagram(kin) {
+            const mw = miniCanvas.width;
+            const mh = miniCanvas.height;
+            miniCtx.clearRect(0, 0, mw, mh);
+
+            // Auto-scale triangle to fit cleanly inside the 195x145 mini canvas
+            const maxSpeed = Math.max(state.v_br + state.v_rg, 12);
+            const scale = 85 / maxSpeed;
+
+            const startX = mw * 0.42 - (kin.v_bg_x * scale) * 0.35;
+            const startY = mh - 22;
+
+            // North reference line
+            miniCtx.save();
+            miniCtx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+            miniCtx.setLineDash([3, 3]);
+            miniCtx.beginPath();
+            miniCtx.moveTo(startX, startY);
+            miniCtx.lineTo(startX, 14);
+            miniCtx.stroke();
+            miniCtx.restore();
+
+            const tipVbrX = startX + kin.v_br_x * scale;
+            const tipVbrY = startY - kin.v_br_y * scale;
+
+            const tipVbgX = startX + kin.v_bg_x * scale;
+            const tipVbgY = startY - kin.v_bg_y * scale;
+
+            // Draw v_br (Cyan)
+            drawVectorArrow(miniCtx, startX, startY, tipVbrX, tipVbrY, '#38bdf8', '', 2.6);
+            // Draw v_rg tip-to-tail (Orange)
+            if (state.v_rg > 0.1) {
+                drawVectorArrow(miniCtx, tipVbrX, tipVbrY, tipVbgX, tipVbgY, '#fb923c', '', 2.6);
+            }
+            // Draw Resultant v_bg (Green)
+            drawVectorArrow(miniCtx, startX, startY, tipVbgX, tipVbgY, '#4ade80', '', 2.8);
+        }
+
+        /* ==========================================================================
+           INTERACTIVE CONTROLS, PRESETS & EVENT LISTENERS
+           ========================================================================== */
+        function togglePlay() {
+            if (state.hasLanded) {
+                // Save trail and restart from dock automatically
+                saveCurrentTrailToGhost();
+                state.x = 0;
+                state.y = 0;
+                state.t = 0;
+                state.currentTrail = [];
+                state.hasLanded = false;
+                state.isPlaying = true;
+            } else {
+                state.isPlaying = !state.isPlaying;
+            }
+            updatePlayButtonUI();
+            updateTelemetryDOM();
+        }
+
+        function updatePlayButtonUI() {
+            const btn = document.getElementById('playPauseBtn');
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            if (state.isPlaying) {
+                btn.classList.add('paused');
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                btn.classList.remove('paused');
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        }
+
+        function stepForward() {
+            state.isPlaying = false;
+            updatePlayButtonUI();
+            if (state.hasLanded) {
+                resetBoatToDock();
+            }
+            stepPhysics(0.05);
+        }
+
+        function setSimSpeed(mult) {
+            state.simSpeed = mult;
+            document.getElementById('speed05').classList.toggle('active', mult === 0.5);
+            document.getElementById('speed10').classList.toggle('active', mult === 1.0);
+            document.getElementById('speed20').classList.toggle('active', mult === 2.0);
+        }
+
+        function saveCurrentTrailToGhost() {
+            if (state.currentTrail.length > 2) {
+                const kin = getKinematics();
+                state.ghostTrails.push({
+                    points: [...state.currentTrail],
+                    thetaDeg: state.thetaDeg,
+                    v_br: state.v_br,
+                    v_rg: state.v_rg,
+                    drift: state.x,
+                    time: state.t
+                });
+                // Keep up to 4 ghost trails to avoid clutter
+                if (state.ghostTrails.length > 4) state.ghostTrails.shift();
+            }
+        }
+
+        function resetBoatToDock() {
+            saveCurrentTrailToGhost();
+            state.isPlaying = false;
+            state.hasLanded = false;
+            state.x = 0;
+            state.y = 0;
+            state.t = 0;
+            state.currentTrail = [];
+            updatePlayButtonUI();
+            updateTelemetryDOM();
+        }
+
+        function clearGhostTrails() {
+            state.ghostTrails = [];
+            state.currentTrail = [];
+            showBanner('🧹 Cleared comparison trails', '#94a3b8');
+        }
+
+        function setHeadingAngle(deg) {
+            const clamped = Math.max(-75, Math.min(75, deg));
+            state.thetaDeg = clamped;
+            document.getElementById('sliderTheta').value = clamped;
+            if (state.hasLanded) resetBoatToDock();
+            updateTelemetryDOM();
+        }
+
+        function setZeroDriftAngle() {
+            if (state.v_rg >= state.v_br) {
+                showBanner(`⚠️ Zero Drift Impossible! River current (${state.v_rg} m/s) ≥ Boat speed (${state.v_br} m/s)!`, '#ef4444');
+                return;
+            }
+            const exactAngleDeg = -(Math.asin(state.v_rg / state.v_br) * 180) / Math.PI;
+            setHeadingAngle(exactAngleDeg);
+            showBanner(`🎯 Heading set to θ = ${exactAngleDeg.toFixed(1)}° so v_br,x = -v_rg (Zero Drift!)`, '#4ade80');
+        }
+
+        function applyPreset(mode) {
+            document.getElementById('presetFree').classList.toggle('active', mode === 'free');
+            document.getElementById('presetShortestTime').classList.toggle('active', mode === 'shortestTime');
+            document.getElementById('presetZeroDrift').classList.toggle('active', mode === 'zeroDrift');
+
+            resetBoatToDock();
+
+            if (mode === 'shortestTime') {
+                setHeadingAngle(0);
+                state.targetX = getKinematics().totalDrift;
+                showBanner('⏱️ Shortest Time Mode: Aiming straight North (θ = 0°) maximizes v_y!', '#38bdf8');
+            } else if (mode === 'zeroDrift') {
+                state.targetX = 0;
+                setZeroDriftAngle();
+            } else {
+                showBanner('🧭 Free Explore Mode: Drag vectors or adjust sliders freely!', '#38bdf8');
+            }
+        }
+
+        function resetAll() {
+            state.v_br = 10.0;
+            state.v_rg = 4.0;
+            state.thetaDeg = 0.0;
+            state.riverWidth = 100.0;
+            state.targetX = 40.0;
+            state.ghostTrails = [];
+            state.currentTrail = [];
+            state.x = 0;
+            state.y = 0;
+            state.t = 0;
+            state.isPlaying = false;
+            state.hasLanded = false;
+
+            document.getElementById('sliderVbr').value = 10.0;
+            document.getElementById('sliderVrg').value = 4.0;
+            document.getElementById('sliderTheta').value = 0.0;
+            document.getElementById('sliderWidth').value = 100;
+
+            document.getElementById('chkVbr').checked = true;
+            document.getElementById('chkVrg').checked = true;
+            document.getElementById('chkVbg').checked = true;
+            document.getElementById('chkTriangle').checked = true;
+            document.getElementById('chkComponents').checked = false;
+            document.getElementById('chkGrid').checked = true;
+            document.getElementById('chkGhost').checked = true;
+            document.getElementById('chkRuler').checked = false;
+
+            setSimSpeed(1.0);
+            updateViewportMetrics();
+            updatePlayButtonUI();
+            updateTelemetryDOM();
+            showBanner('🔄 All simulation parameters reset to defaults', '#f97316');
+        }
+
+        // Wire up Sliders
+        document.getElementById('sliderVbr').addEventListener('input', (e) => {
+            state.v_br = parseFloat(e.target.value);
+            if (state.hasLanded) resetBoatToDock();
+            updateTelemetryDOM();
+        });
+
+        document.getElementById('sliderVrg').addEventListener('input', (e) => {
+            state.v_rg = parseFloat(e.target.value);
+            if (state.hasLanded) resetBoatToDock();
+            updateTelemetryDOM();
+        });
+
+        document.getElementById('sliderTheta').addEventListener('input', (e) => {
+            state.thetaDeg = parseFloat(e.target.value);
+            if (state.hasLanded) resetBoatToDock();
+            updateTelemetryDOM();
+        });
+
+        document.getElementById('sliderWidth').addEventListener('input', (e) => {
+            state.riverWidth = parseFloat(e.target.value);
+            resetBoatToDock();
+            updateViewportMetrics();
+            updateTelemetryDOM();
+        });
+
+        /* ==========================================================================
+           DIRECT CANVAS MANIPULATION (Drag Boat Vector, Target Flag, or Ruler)
+           ========================================================================== */
+        function getPointerPos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                px: clientX - rect.left,
+                py: clientY - rect.top
+            };
+        }
+
+        function handlePointerDown(evt) {
+            const { px, py } = getPointerPos(evt);
+            const kin = getKinematics();
+
+            // 1. Check Ruler Endpoints if Ruler is enabled
+            if (document.getElementById('chkRuler').checked) {
+                const p1 = worldToScreen(state.ruler.x1, state.ruler.y1);
+                const p2 = worldToScreen(state.ruler.x2, state.ruler.y2);
+                if (Math.hypot(px - p1.px, py - p1.py) < 16) {
+                    state.draggingMode = 'rulerP1';
+                    return;
+                }
+                if (Math.hypot(px - p2.px, py - p2.py) < 16) {
+                    state.draggingMode = 'rulerP2';
+                    return;
+                }
+            }
+
+            // 2. Check Target Flag on North Bank
+            const targetScreen = worldToScreen(state.targetX, state.riverWidth);
+            if (Math.hypot(px - targetScreen.px, py - (targetScreen.py - 18)) < 26) {
+                state.draggingMode = 'target';
+                return;
+            }
+
+            // 3. Check v_br Vector Tip on Boat (to aim heading directly)
+            const boatScreen = worldToScreen(state.x, state.y);
+            const vecScale = 9.5;
+            const vbrTipX = boatScreen.px + kin.v_br_x * vecScale;
+            const vbrTipY = boatScreen.py - kin.v_br_y * vecScale;
+
+            if (Math.hypot(px - vbrTipX, py - vbrTipY) < 24 || Math.hypot(px - boatScreen.px, py - boatScreen.py) < 26) {
+                if (state.hasLanded) resetBoatToDock();
+                state.draggingMode = 'heading';
+                return;
+            }
+        }
+
+        function handlePointerMove(evt) {
+            const { px, py } = getPointerPos(evt);
+            const world = screenToWorld(px, py);
+
+            if (!state.draggingMode) {
+                // Update hover cursor for affordance
+                const kin = getKinematics();
+                const boatScreen = worldToScreen(state.x, state.y);
+                const vbrTipX = boatScreen.px + kin.v_br_x * 9.5;
+                const vbrTipY = boatScreen.py - kin.v_br_y * 9.5;
+                const targetScreen = worldToScreen(state.targetX, state.riverWidth);
+
+                if (
+                    Math.hypot(px - vbrTipX, py - vbrTipY) < 20 ||
+                    Math.hypot(px - targetScreen.px, py - (targetScreen.py - 18)) < 24
+                ) {
+                    canvas.style.cursor = 'grab';
+                } else {
+                    canvas.style.cursor = 'default';
+                }
+                return;
+            }
+
+            canvas.style.cursor = 'grabbing';
+
+            if (state.draggingMode === 'heading') {
+                const boatScreen = worldToScreen(state.x, state.y);
+                const dx = px - boatScreen.px;
+                const dy = boatScreen.py - py; // Positive upward (North)
+                if (dy > 5) {
+                    const angleDeg = (Math.atan2(dx, dy) * 180) / Math.PI;
+                    const rounded = Math.round(angleDeg * 2) / 2;
+                    setHeadingAngle(rounded);
+                }
+            } else if (state.draggingMode === 'target') {
+                state.targetX = Math.max(-180, Math.min(300, Math.round(world.wx)));
+            } else if (state.draggingMode === 'rulerP1') {
+                state.ruler.x1 = world.wx;
+                state.ruler.y1 = world.wy;
+            } else if (state.draggingMode === 'rulerP2') {
+                state.ruler.x2 = world.wx;
+                state.ruler.y2 = world.wy;
+            }
+        }
+
+        function handlePointerUp() {
+            state.draggingMode = null;
+            canvas.style.cursor = 'default';
+        }
+
+        canvas.addEventListener('mousedown', handlePointerDown);
+        window.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerUp);
+
+        canvas.addEventListener('touchstart', (e) => { handlePointerDown(e); }, { passive: true });
+        window.addEventListener('touchmove', (e) => { if (state.draggingMode) handlePointerMove(e); }, { passive: true });
+        window.addEventListener('touchend', handlePointerUp);
+
+        // Spacebar shortcut to Play / Pause
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            updateViewportMetrics();
+        });
+
+        /* ==========================================================================
+           MAIN 60FPS ANIMATION LOOP
+           ========================================================================== */
+        let lastFrameTime = performance.now();
+
+        function animate(now) {
+            const rawDt = Math.min(0.05, (now - lastFrameTime) / 1000);
+            lastFrameTime = now;
+
+            if (state.isPlaying && !state.hasLanded) {
+                stepPhysics(rawDt * state.simSpeed);
+            }
+
+            renderScene(rawDt);
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function () {
+            updateViewportMetrics();
+            updateTelemetryDOM();
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+</html>
