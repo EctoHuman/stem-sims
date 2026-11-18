@@ -3,158 +3,419 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Secant to Tangent Visualizer — Calculus I</title>
+  <title>LAB // 04 — Secant to Tangent Derivative Visualizer | STEM.LAB</title>
   <style>
-    :root { --bg: #0f172a; --panel: #1e293b; --border: #334155; --text: #f8fafc; --muted: #94a3b8; --accent: #c084fc; }
+    :root {
+      --bg: #050508;
+      --surface: rgba(15, 17, 26, 0.78);
+      --surface-solid: #0b0d14;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.22);
+      --text: #f8fafc;
+      --muted: #8e96aa;
+      --accent: #c084fc;
+      --emerald: #34d399;
+      --amber: #f59e0b;
+      --cyan: #38bdf8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-wrap: wrap; min-height: 100vh; padding: 1.25rem; gap: 1.25rem; }
-    .canvas-wrap { flex: 1 1 560px; background: #090d16; border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    canvas { background: #0f172a; border: 1px solid #334155; border-radius: 8px; max-width: 100%; }
-    .controls { flex: 0 1 360px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.35rem; display: flex; flex-direction: column; gap: 1rem; }
-    h1 { font-size: 1.25rem; color: var(--accent); }
-    select, input[type="range"] { width: 100%; padding: 0.45rem; border-radius: 8px; background: #0f172a; color: var(--text); border: 1px solid var(--border); accent-color: var(--accent); }
-    .readout { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
-    .stat { font-size: 0.8rem; color: var(--muted); }
-    .stat strong { display: block; font-size: 1.1rem; color: var(--text); margin-top: 0.15rem; }
-    label { font-size: 0.88rem; display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 0.25rem; }
-    .btn-row { display: flex; gap: 0.6rem; margin-top: auto; }
-    button, .back-link { flex: 1; padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: #334155; color: var(--text); font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; font-size: 0.88rem; }
-    button.primary { background: var(--accent); color: #0f172a; border: none; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.08), transparent 40%);
+    }
+    .film-grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .topbar {
+      position: relative; z-index: 10; margin: 1rem 1.25rem 0; padding: 0.7rem 1.25rem;
+      background: var(--surface); backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: 999px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-logo {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--text); font-weight: 800; font-size: 0.95rem;
+    }
+    .star {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      color: #050508; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
+    }
+    .lab-badge {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 999px;
+      background: rgba(192, 132, 252, 0.14); color: var(--accent);
+      border: 1px solid rgba(192, 132, 252, 0.35);
+    }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill-btn {
+      background: rgba(255,255,255,0.04); color: var(--text);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active { background: var(--accent); color: #050508; border-color: var(--accent); }
+    .back-btn {
+      text-decoration: none; color: var(--text); font-size: 0.82rem; font-weight: 700;
+      padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--border-bright);
+      background: rgba(255,255,255,0.05); transition: all 0.2s;
+    }
+    .back-btn:hover { background: #fff; color: #050508; }
+
+    .workspace {
+      position: relative; z-index: 2; flex: 1; display: grid;
+      grid-template-columns: 1fr 390px; gap: 1.25rem; padding: 1.25rem;
+      max-width: 1600px; width: 100%; margin: 0 auto;
+    }
+    @media (max-width: 1080px) { .workspace { grid-template-columns: 1fr; } }
+    .canvas-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem;
+      backdrop-filter: blur(16px);
+    }
+    .canvas-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.78rem; color: var(--muted); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.35rem; }
+    canvas {
+      width: 100%; height: 520px; display: block;
+      background: #060913; border: 1px solid var(--border); border-radius: 14px; cursor: grab;
+    }
+    .transport { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.06); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.55rem 1rem; font-size: 0.84rem; font-weight: 700; cursor: pointer;
+    }
+    .ctrl-btn.primary { background: var(--accent); color: #050508; border-color: var(--accent); }
+
+    .sidebar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1.35rem; display: flex; flex-direction: column; gap: 1.05rem;
+      backdrop-filter: blur(16px);
+    }
+    .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 800; }
+    .telemetry-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+      background: var(--surface-solid); padding: 0.85rem; border-radius: 14px; border: 1px solid var(--border);
+    }
+    .stat-box { font-size: 0.74rem; color: var(--muted); }
+    .stat-box strong { display: block; font-family: var(--mono); font-size: 1.02rem; color: var(--text); margin-top: 0.15rem; }
+    .slider-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .slider-group label { display: flex; justify-content: space-between; font-size: 0.83rem; font-weight: 600; }
+    .slider-group label span.val { font-family: var(--mono); color: var(--accent); }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .toggles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem; }
+    .toggles-grid label {
+      display: flex; align-items: center; gap: 0.45rem; cursor: pointer;
+      background: rgba(255,255,255,0.03); padding: 0.45rem 0.65rem; border-radius: 8px; border: 1px solid var(--border);
+    }
+    table.limit-table {
+      width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem;
+      background: var(--surface-solid); border-radius: 10px; overflow: hidden;
+    }
+    table.limit-table th, table.limit-table td {
+      padding: 0.45rem 0.65rem; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    table.limit-table th { color: var(--muted); font-weight: 600; }
   </style>
 </head>
 <body>
-  <div class="canvas-wrap">
-    <canvas id="graph" width="600" height="420"></canvas>
-  </div>
+  <div class="film-grain"></div>
 
-  <aside class="controls">
-    <h1>Secant → Tangent Derivative</h1>
-    <div>
-      <label>Function f(x)</label>
-      <select id="fnSelect">
-        <option value="quad">f(x) = 0.25 x²</option>
-        <option value="sin">f(x) = 2 sin(x)</option>
-        <option value="cubic">f(x) = 0.1 x³ - 0.5x</option>
-      </select>
+  <header class="topbar">
+    <div class="brand-group">
+      <a href="../index.html" class="brand-logo"><span class="star">✪</span> STEM.LAB</a>
+      <span class="lab-badge">LAB // 04 • DIFFERENTIAL CALCULUS</span>
     </div>
+    <div class="preset-bar">
+      <button class="pill-btn active" data-fn="quad">f(x) = 0.25x²</button>
+      <button class="pill-btn" data-fn="sin">f(x) = 2·sin(x)</button>
+      <button class="pill-btn" data-fn="cubic">f(x) = 0.15x³ - 0.8x</button>
+      <button class="pill-btn" data-fn="exp">f(x) = 0.5·e^(0.5x) - 1</button>
+    </div>
+    <a href="../index.html" class="back-btn">← Back to Hub</a>
+  </header>
 
-    <div class="readout">
-      <div class="stat">Exact Tangent f'(x₀)<strong id="tanSlope" style="color:#34d399">1.000</strong></div>
-      <div class="stat">Secant Slope m_sec<strong id="secSlope" style="color:#f59e0b">1.500</strong></div>
-      <div class="stat">Step Size (Δx = h)<strong id="hRead">2.00</strong></div>
-      <div class="stat">Slope Error |Δm|<strong id="errRead">0.500</strong></div>
-    </div>
+  <main class="workspace">
+    <section class="canvas-card">
+      <div class="canvas-header">
+        <div class="legend">
+          <span><i class="dot" style="background:#c084fc"></i>Curve f(x)</span>
+          <span><i class="dot" style="background:#f59e0b"></i>Secant Line (m_sec)</span>
+          <span><i class="dot" style="background:#34d399"></i>Exact Tangent f'(x₀)</span>
+          <span><i class="dot" style="background:#38bdf8"></i>Derivative Curve f'(x)</span>
+        </div>
+        <span style="font-size:0.76rem; color:var(--muted);">💡 Tip: Drag point P (green) or Q (amber) directly along the curve</span>
+      </div>
 
-    <div>
-      <label><span>Base Point (x₀)</span><span id="x0Lbl">1.00</span></label>
-      <input type="range" id="x0Slider" min="-3" max="3" step="0.1" value="1.0" />
-    </div>
+      <canvas id="calcCanvas" width="960" height="520"></canvas>
 
-    <div>
-      <label><span>Step Size (Δx)</span><span id="hLbl">2.00</span></label>
-      <input type="range" id="hSlider" min="0.01" max="3.0" step="0.01" value="2.0" />
-    </div>
+      <div class="transport">
+        <div class="btn-group">
+          <button class="ctrl-btn primary" id="animateLimitBtn">▶ Animate Limit (Δx → 0)</button>
+          <button class="ctrl-btn" id="resetHBtn">↺ Reset Δx = 2.00</button>
+        </div>
+      </div>
+    </section>
 
-    <div class="btn-row">
-      <button class="primary" id="limitBtn">Animate Δx → 0</button>
-      <a href="../index.html" class="back-link">← Hub</a>
-    </div>
-  </aside>
+    <aside class="sidebar">
+      <div class="panel-title">Instantaneous vs. Average Rate</div>
+      <div class="telemetry-grid">
+        <div class="stat-box">Exact Derivative f'(x₀)<strong id="tanRead" style="color:#34d399">0.5000</strong></div>
+        <div class="stat-box">Secant Slope (Δy/Δx)<strong id="secRead" style="color:#f59e0b">1.0000</strong></div>
+        <div class="stat-box">Step Size (Δx = h)<strong id="hRead">2.000</strong></div>
+        <div class="stat-box">Approximation Error<strong id="errRead">0.5000</strong></div>
+      </div>
+
+      <div class="panel-title">Coordinates</div>
+      <div class="slider-group">
+        <label><span>Base Point (x₀)</span><span class="val" id="x0Lbl">1.00</span></label>
+        <input type="range" id="x0Slider" min="-4.0" max="4.0" step="0.05" value="1.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Step Size (Δx = h)</span><span class="val" id="hLbl">2.000</span></label>
+        <input type="range" id="hSlider" min="-3.0" max="3.0" step="0.01" value="2.0" />
+      </div>
+
+      <div class="panel-title">Visual Overlays</div>
+      <div class="toggles-grid">
+        <label><input type="checkbox" id="chkTriangle" checked /> Δy / Δx Triangle</label>
+        <label><input type="checkbox" id="chkDerivCurve" checked /> Plot f'(x) Curve</label>
+      </div>
+
+      <div class="panel-title">Limit Convergence Table (h → 0⁺)</div>
+      <table class="limit-table">
+        <thead>
+          <tr><th>Step h</th><th>Secant (f(x₀+h)-f(x₀))/h</th><th>|Error|</th></tr>
+        </thead>
+        <tbody id="limitTableBody"></tbody>
+      </table>
+    </aside>
+  </main>
 
   <script>
-    const canvas = document.getElementById('graph');
+    const canvas = document.getElementById('calcCanvas');
     const ctx = canvas.getContext('2d');
-    const fnSelect = document.getElementById('fnSelect');
+
     const x0Slider = document.getElementById('x0Slider');
     const hSlider = document.getElementById('hSlider');
+    const chkTriangle = document.getElementById('chkTriangle');
+    const chkDerivCurve = document.getElementById('chkDerivCurve');
 
     const funcs = {
       quad: { f: x => 0.25 * x * x, df: x => 0.5 * x },
       sin: { f: x => 2 * Math.sin(x), df: x => 2 * Math.cos(x) },
-      cubic: { f: x => 0.1 * x * x * x - 0.5 * x, df: x => 0.3 * x * x - 0.5 }
+      cubic: { f: x => 0.15 * x * x * x - 0.8 * x, df: x => 0.45 * x * x - 0.8 },
+      exp: { f: x => 0.5 * Math.exp(0.5 * x) - 1, df: x => 0.25 * Math.exp(0.5 * x) }
     };
+    let currentFn = 'quad';
+    let draggingPoint = null;
 
-    const scale = 55;
-    const ox = canvas.width / 2;
-    const oy = canvas.height / 2 + 30;
-    const toScreen = (x, y) => [ox + x * scale, oy - y * scale];
+    const ox = 480;
+    const oy = 290;
+    const scale = 68;
 
-    function draw() {
+    const toScreen = (x, y) => ({ x: ox + x * scale, y: oy - y * scale });
+    const toWorldX = sx => (sx - ox) / scale;
+
+    function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const { f, df } = funcs[fnSelect.value];
+      const { f, df } = funcs[currentFn];
       const x0 = parseFloat(x0Slider.value);
-      const h = parseFloat(hSlider.value);
+      let h = parseFloat(hSlider.value);
+      if (Math.abs(h) < 0.005) h = 0.005;
+
       const x1 = x0 + h;
-      const y0 = f(x0), y1 = f(x1);
+      const y0 = f(x0);
+      const y1 = f(x1);
       const mTan = df(x0);
       const mSec = (y1 - y0) / h;
 
-      // Grid & Axes
-      ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
-      for (let i = -5; i <= 5; i++) {
-        const [gx, gy] = toScreen(i, i);
-        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, canvas.height); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(canvas.width, gy); ctx.stroke();
+      // Coordinate Grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      for (let gx = -7; gx <= 7; gx++) {
+        const p = toScreen(gx, 0);
+        ctx.beginPath(); ctx.moveTo(p.x, 0); ctx.lineTo(p.x, canvas.height); ctx.stroke();
       }
-      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      for (let gy = -4; gy <= 4; gy++) {
+        const p = toScreen(0, gy);
+        ctx.beginPath(); ctx.moveTo(0, p.y); ctx.lineTo(canvas.width, p.y); ctx.stroke();
+      }
+
+      // Main Axes
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(canvas.width, oy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, canvas.height); ctx.stroke();
 
-      // Curve f(x)
-      ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 3;
+      // Derivative Curve f'(x) (Cyan Dashed)
+      if (chkDerivCurve.checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        for (let px = 0; px <= canvas.width; px += 3) {
+          const wx = toWorldX(px);
+          const p = toScreen(wx, df(wx));
+          px === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Primary Function Curve f(x)
+      ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 3.2;
       ctx.beginPath();
       for (let px = 0; px <= canvas.width; px += 2) {
-        const x = (px - ox) / scale;
-        const [sx, sy] = toScreen(x, f(x));
-        px === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+        const wx = toWorldX(px);
+        const p = toScreen(wx, f(wx));
+        px === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
       }
       ctx.stroke();
 
+      const p0 = toScreen(x0, y0);
+      const p1 = toScreen(x1, y1);
+
+      // Rise-over-Run Slope Triangle (Δx, Δy)
+      if (chkTriangle.checked) {
+        const corner = toScreen(x1, y0);
+        ctx.save();
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y); ctx.lineTo(corner.x, corner.y); ctx.lineTo(p1.x, p1.y);
+        ctx.closePath(); ctx.fill();
+
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.65)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y); ctx.lineTo(corner.x, corner.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '700 11px ui-monospace, monospace';
+        ctx.fillText(`Δx = ${h.toFixed(2)}`, (p0.x + corner.x) / 2 - 25, corner.y + 16);
+        ctx.fillText(`Δy = ${(y1 - y0).toFixed(2)}`, corner.x + 8, (corner.y + p1.y) / 2);
+        ctx.restore();
+      }
+
       // Exact Tangent Line (Green)
-      ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+      ctx.save();
+      ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2.2;
+      ctx.setLineDash([7, 5]);
       ctx.beginPath();
-      [-6, 6].forEach((x, idx) => {
-        const [sx, sy] = toScreen(x, y0 + mTan * (x - x0));
-        idx === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+      [-8, 8].forEach((wx, idx) => {
+        const pt = toScreen(wx, y0 + mTan * (wx - x0));
+        idx === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       });
-      ctx.stroke(); ctx.setLineDash([]);
+      ctx.stroke();
+      ctx.restore();
 
       // Secant Line (Amber)
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.6;
       ctx.beginPath();
-      [-6, 6].forEach((x, idx) => {
-        const [sx, sy] = toScreen(x, y0 + mSec * (x - x0));
-        idx === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+      [-8, 8].forEach((wx, idx) => {
+        const pt = toScreen(wx, y0 + mSec * (wx - x0));
+        idx === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       });
       ctx.stroke();
 
-      // Points P(x0, y0) and Q(x0+h, y1)
-      [[x0, y0, '#34d399'], [x1, y1, '#f59e0b']].forEach(([x, y, color]) => {
-        const [sx, sy] = toScreen(x, y);
-        ctx.fillStyle = color;
-        ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
-      });
+      // Points P and Q
+      ctx.fillStyle = '#34d399';
+      ctx.beginPath(); ctx.arc(p0.x, p0.y, 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(p1.x, p1.y, 7.5, 0, Math.PI * 2); ctx.fill();
 
+      // Update Readouts & Limit Table
+      document.getElementById('tanRead').textContent = mTan.toFixed(4);
+      document.getElementById('secRead').textContent = mSec.toFixed(4);
+      document.getElementById('hRead').textContent = h.toFixed(3);
+      document.getElementById('errRead').textContent = Math.abs(mSec - mTan).toFixed(4);
       document.getElementById('x0Lbl').textContent = x0.toFixed(2);
-      document.getElementById('hLbl').textContent = h.toFixed(2);
-      document.getElementById('tanSlope').textContent = mTan.toFixed(3);
-      document.getElementById('secSlope').textContent = mSec.toFixed(3);
-      document.getElementById('hRead').textContent = h.toFixed(2);
-      document.getElementById('errRead').textContent = Math.abs(mSec - mTan).toFixed(3);
+      document.getElementById('hLbl').textContent = h.toFixed(3);
+
+      const steps = [1.0, 0.1, 0.01, 0.001];
+      const tbody = document.getElementById('limitTableBody');
+      tbody.innerHTML = steps.map(s => {
+        const ms = (f(x0 + s) - y0) / s;
+        const err = Math.abs(ms - mTan);
+        return `<tr><td>${s}</td><td style="color:#f59e0b">${ms.toFixed(5)}</td><td>${err.toFixed(5)}</td></tr>`;
+      }).join('');
     }
 
-    [fnSelect, x0Slider, hSlider].forEach(el => el.addEventListener('input', draw));
+    [x0Slider, hSlider, chkTriangle, chkDerivCurve].forEach(el => el.addEventListener('input', render));
 
-    document.getElementById('limitBtn').addEventListener('click', () => {
-      const timer = setInterval(() => {
-        let h = parseFloat(hSlider.value);
-        if (h <= 0.03) { hSlider.value = 0.01; draw(); clearInterval(timer); return; }
-        hSlider.value = (h * 0.92).toFixed(2);
-        draw();
-      }, 30);
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFn = btn.dataset.fn;
+        render();
+      });
     });
 
-    draw();
+    document.getElementById('animateLimitBtn').addEventListener('click', () => {
+      const timer = setInterval(() => {
+        let h = parseFloat(hSlider.value);
+        if (Math.abs(h) <= 0.02) {
+          hSlider.value = 0.01;
+          render();
+          clearInterval(timer);
+          return;
+        }
+        hSlider.value = (h * 0.9).toFixed(3);
+        render();
+      }, 28);
+    });
+
+    document.getElementById('resetHBtn').addEventListener('click', () => {
+      hSlider.value = 2.0;
+      render();
+    });
+
+    // Direct Canvas Dragging for P and Q
+    canvas.addEventListener('mousedown', e => {
+      const r = canvas.getBoundingClientRect();
+      const mx = (e.clientX - r.left) * (canvas.width / r.width);
+      const my = (e.clientY - r.top) * (canvas.height / r.height);
+      const { f } = funcs[currentFn];
+      const x0 = parseFloat(x0Slider.value);
+      const h = parseFloat(hSlider.value);
+      const p0 = toScreen(x0, f(x0));
+      const p1 = toScreen(x0 + h, f(x0 + h));
+
+      if (Math.hypot(mx - p1.x, my - p1.y) < 18) draggingPoint = 'Q';
+      else if (Math.hypot(mx - p0.x, my - p0.y) < 18) draggingPoint = 'P';
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!draggingPoint) return;
+      const r = canvas.getBoundingClientRect();
+      const mx = (e.clientX - r.left) * (canvas.width / r.width);
+      const wx = Math.max(-4, Math.min(4, toWorldX(mx)));
+      if (draggingPoint === 'P') {
+        x0Slider.value = wx.toFixed(2);
+      } else if (draggingPoint === 'Q') {
+        const x0 = parseFloat(x0Slider.value);
+        hSlider.value = Math.max(-3, Math.min(3, wx - x0)).toFixed(2);
+      }
+      render();
+    });
+
+    window.addEventListener('mouseup', () => { draggingPoint = null; });
+
+    render();
   </script>
 </body>
 </html>

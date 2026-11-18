@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAB // 07 — Thermodynamic Processes & P-V Calculus | STEM.LAB</title>
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: rgba(15, 17, 26, 0.78);
+      --surface-solid: #0b0d14;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.22);
+      --text: #f8fafc;
+      --muted: #8e96aa;
+      --accent: #38bdf8;
+      --emerald: #34d399;
+      --amber: #f59e0b;
+      --rose: #fb7185;
+      --violet: #c084fc;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(245, 158, 11, 0.1), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.1), transparent 40%);
+    }
+    .film-grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .topbar {
+      position: relative; z-index: 10; margin: 1rem 1.25rem 0; padding: 0.7rem 1.25rem;
+      background: var(--surface); backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: 999px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-logo {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--text); font-weight: 800; font-size: 0.95rem;
+    }
+    .star {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), var(--accent));
+      color: #050508; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
+    }
+    .lab-badge {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 999px;
+      background: rgba(245, 158, 11, 0.14); color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill-btn {
+      background: rgba(255,255,255,0.04); color: var(--text);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active { background: var(--amber); color: #050508; border-color: var(--amber); }
+    .back-btn {
+      text-decoration: none; color: var(--text); font-size: 0.82rem; font-weight: 700;
+      padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--border-bright);
+      background: rgba(255,255,255,0.05); transition: all 0.2s;
+    }
+    .back-btn:hover { background: #fff; color: #050508; }
+
+    .workspace {
+      position: relative; z-index: 2; flex: 1; display: grid;
+      grid-template-columns: 1fr 390px; gap: 1.25rem; padding: 1.25rem;
+      max-width: 1600px; width: 100%; margin: 0 auto;
+    }
+    @media (max-width: 1080px) { .workspace { grid-template-columns: 1fr; } }
+    .canvas-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem;
+      backdrop-filter: blur(16px);
+    }
+    .canvas-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.78rem; color: var(--muted); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.35rem; }
+    canvas {
+      width: 100%; height: 520px; display: block;
+      background: #060913; border: 1px solid var(--border); border-radius: 14px;
+    }
+    .sidebar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1.35rem; display: flex; flex-direction: column; gap: 1.05rem;
+      backdrop-filter: blur(16px);
+    }
+    .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--amber); font-weight: 800; }
+    .telemetry-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+      background: var(--surface-solid); padding: 0.85rem; border-radius: 14px; border: 1px solid var(--border);
+    }
+    .stat-box { font-size: 0.74rem; color: var(--muted); }
+    .stat-box strong { display: block; font-family: var(--mono); font-size: 1.02rem; color: var(--text); margin-top: 0.15rem; }
+    .slider-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .slider-group label { display: flex; justify-content: space-between; font-size: 0.83rem; font-weight: 600; }
+    .slider-group label span.val { font-family: var(--mono); color: var(--amber); }
+    input[type="range"] { width: 100%; accent-color: var(--amber); cursor: pointer; }
+    .formula-card {
+      background: var(--surface-solid); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.85rem; font-size: 0.79rem; color: var(--muted); line-height: 1.55;
+    }
+    .formula-card code { display: block; font-family: var(--mono); color: var(--amber); margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="film-grain"></div>
+
+  <header class="topbar">
+    <div class="brand-group">
+      <a href="../index.html" class="brand-logo"><span class="star">✪</span> STEM.LAB</a>
+      <span class="lab-badge">LAB // 07 • THERMODYNAMICS CALCULUS (CH. 20–21)</span>
+    </div>
+    <div class="preset-bar">
+      <button class="pill-btn active" data-proc="isothermal">🌡️ Isothermal (ΔT = 0)</button>
+      <button class="pill-btn" data-proc="adiabatic">🛡️ Adiabatic (Q = 0, PV^γ = C)</button>
+      <button class="pill-btn" data-proc="isobaric">⚖️ Isobaric (ΔP = 0)</button>
+      <button class="pill-btn" data-proc="isochoric">🔒 Isochoric (ΔV = 0, W = 0)</button>
+    </div>
+    <a href="../index.html" class="back-btn">← Back to Hub</a>
+  </header>
+
+  <main class="workspace">
+    <section class="canvas-card">
+      <div class="canvas-header">
+        <div class="legend">
+          <span><i class="dot" style="background:#38bdf8"></i>Active P(V) Path</span>
+          <span><i class="dot" style="background:#34d399"></i>Expansion Work (+∫ P dV)</span>
+          <span><i class="dot" style="background:#fb7185"></i>Heat Q &amp; Internal Energy ΔE_int</span>
+          <span><i class="dot" style="background:#94a3b8"></i>Reference Isotherms</span>
+        </div>
+        <span style="font-size:0.76rem; color:var(--muted);">💡 Compare Isothermal vs. steeper Adiabatic (PV^γ) integrals</span>
+      </div>
+
+      <canvas id="pvCanvas" width="960" height="520"></canvas>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel-title">First Law Energy Balance (ΔE_int = Q - W)</div>
+      <div class="telemetry-grid">
+        <div class="stat-box">Work W = ∫ P(V) dV<strong id="wRead" style="color:#34d399">+2.73 kJ</strong></div>
+        <div class="stat-box">Heat Added (Q)<strong id="qRead" style="color:#fb7185">+2.73 kJ</strong></div>
+        <div class="stat-box">Internal Energy ΔE_int<strong id="uRead" style="color:#c084fc">0.00 kJ</strong></div>
+        <div class="stat-box">Final Temp (T_f)<strong id="tfRead">300 K</strong></div>
+        <div class="stat-box">Initial (P_i, V_i)<strong id="piRead">2.46 atm, 10L</strong></div>
+        <div class="stat-box">Final (P_f, V_f)<strong id="pfRead">0.82 atm, 30L</strong></div>
+      </div>
+
+      <div class="panel-title">State Variables (n = 1.0 mol Monatomic, γ = 5/3)</div>
+      <div class="slider-group">
+        <label><span>Initial Volume (V_i)</span><span class="val" id="viLbl">10.0 L</span></label>
+        <input type="range" id="viSlider" min="6.0" max="25.0" step="1.0" value="10.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Final Volume (V_f)</span><span class="val" id="vfLbl">30.0 L</span></label>
+        <input type="range" id="vfSlider" min="8.0" max="42.0" step="1.0" value="30.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Initial Temperature (T_i)</span><span class="val" id="tiLbl">300 K</span></label>
+        <input type="range" id="tiSlider" min="200" max="600" step="20" value="300" />
+      </div>
+
+      <div class="formula-card">
+        <code>W = ∫[V_i → V_f] P(V) dV   |   ΔE_int = n·C_v·ΔT = Q - W</code>
+        <code>Isothermal: W = nRT·ln(V_f / V_i)   (ΔE_int = 0)</code>
+        <code>Adiabatic:  W = (P_i·V_i - P_f·V_f) / (γ - 1)   (Q = 0)</code>
+        Because $\gamma = C_p/C_v = 5/3 > 1$, an adiabatic curve $PV^\gamma = C$ drops steeper than an isotherm $PV = C$.
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('pvCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const viSlider = document.getElementById('viSlider');
+    const vfSlider = document.getElementById('vfSlider');
+    const tiSlider = document.getElementById('tiSlider');
+
+    let process = 'isothermal';
+    const n = 1.0;
+    const R_J = 8.314;       // J/(mol·K)
+    const R_atm = 0.08206;   // L·atm/(mol·K)
+    const gamma = 5 / 3;     // Monatomic gas
+
+    const gx0 = 75, gy0 = 460, gw = 490, gh = 400;
+    const maxV = 45, maxP = 6.0;
+
+    const toScreen = (V, P) => ({
+      x: gx0 + (V / maxV) * gw,
+      y: gy0 - (P / maxP) * gh
+    });
+
+    function computeThermo() {
+      const Vi = parseFloat(viSlider.value);
+      let Vf = parseFloat(vfSlider.value);
+      const Ti = parseFloat(tiSlider.value);
+      const Pi = (n * R_atm * Ti) / Vi;
+
+      let Pf, Tf, W_J, dU_J, Q_J;
+      if (process === 'isothermal') {
+        Tf = Ti;
+        Pf = (n * R_atm * Tf) / Vf;
+        W_J = n * R_J * Ti * Math.log(Vf / Vi);
+        dU_J = 0;
+        Q_J = W_J;
+      } else if (process === 'adiabatic') {
+        Pf = Pi * Math.pow(Vi / Vf, gamma);
+        Tf = (Pf * Vf) / (n * R_atm);
+        dU_J = 1.5 * n * R_J * (Tf - Ti);
+        Q_J = 0;
+        W_J = -dU_J;
+      } else if (process === 'isobaric') {
+        Pf = Pi;
+        Tf = Ti * (Vf / Vi);
+        W_J = n * R_J * (Tf - Ti);
+        dU_J = 1.5 * n * R_J * (Tf - Ti);
+        Q_J = dU_J + W_J;
+      } else {
+        // Isochoric
+        Vf = Vi;
+        Tf = Ti * 1.45;
+        Pf = (n * R_atm * Tf) / Vf;
+        W_J = 0;
+        dU_J = 1.5 * n * R_J * (Tf - Ti);
+        Q_J = dU_J;
+      }
+      return { Vi, Vf, Ti, Tf, Pi, Pf, W_J, dU_J, Q_J };
+    }
+
+    function P_along_path(V, s) {
+      if (process === 'isothermal') return (n * R_atm * s.Ti) / V;
+      if (process === 'adiabatic') return s.Pi * Math.pow(s.Vi / V, gamma);
+      return s.Pi;
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const s = computeThermo();
+
+      // Grid & P-V Axes
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      for (let v = 5; v <= 45; v += 5) {
+        const pt = toScreen(v, 0);
+        ctx.beginPath(); ctx.moveTo(pt.x, gy0 - gh); ctx.lineTo(pt.x, gy0); ctx.stroke();
+        ctx.fillStyle = '#64748b'; ctx.font = '11px ui-monospace, monospace';
+        ctx.fillText(`${v}L`, pt.x - 10, gy0 + 18);
+      }
+      for (let p = 1; p <= 6; p++) {
+        const pt = toScreen(0, p);
+        ctx.beginPath(); ctx.moveTo(gx0, pt.y); ctx.lineTo(gx0 + gw, pt.y); ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(`${p}atm`, gx0 - 42, pt.y + 4);
+      }
+
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(gx0, gy0 - gh); ctx.lineTo(gx0, gy0); ctx.lineTo(gx0 + gw, gy0); ctx.stroke();
+
+      // Background Reference Isotherms (200K, 300K, 450K, 600K)
+      [200, 300, 450, 600].forEach(Tref => {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        for (let v = 4; v <= 44; v += 1) {
+          const p = (n * R_atm * Tref) / v;
+          if (p <= maxP) {
+            const pt = toScreen(v, p);
+            v === 4 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Shaded Integral Area W = ∫ P(V) dV
+      if (process !== 'isochoric') {
+        ctx.save();
+        ctx.fillStyle = s.W_J >= 0 ? 'rgba(52, 211, 153, 0.24)' : 'rgba(251, 113, 133, 0.24)';
+        ctx.beginPath();
+        const startBase = toScreen(s.Vi, 0);
+        ctx.moveTo(startBase.x, startBase.y);
+        const steps = 60;
+        for (let i = 0; i <= steps; i++) {
+          const v = s.Vi + (i / steps) * (s.Vf - s.Vi);
+          const pt = toScreen(v, P_along_path(v, s));
+          ctx.lineTo(pt.x, pt.y);
+        }
+        const endBase = toScreen(s.Vf, 0);
+        ctx.lineTo(endBase.x, endBase.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Active Process Curve
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      if (process === 'isochoric') {
+        const p1 = toScreen(s.Vi, s.Pi);
+        const p2 = toScreen(s.Vf, s.Pf);
+        ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+      } else {
+        for (let i = 0; i <= 60; i++) {
+          const v = s.Vi + (i / 60) * (s.Vf - s.Vi);
+          const pt = toScreen(v, P_along_path(v, s));
+          i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+        }
+      }
+      ctx.stroke();
+
+      // State Endpoints A (Initial) and B (Final)
+      const ptA = toScreen(s.Vi, s.Pi);
+      const ptB = toScreen(s.Vf, s.Pf);
+      [[ptA, 'State i', '#f59e0b'], [ptB, 'State f', '#34d399']].forEach(([pt, lbl, col]) => {
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '700 12px ui-monospace, monospace';
+        ctx.fillText(lbl, pt.x + 10, pt.y - 8);
+      });
+
+      // Right Side Panel: First Law Energy Bars (Q, W, ΔE_int)
+      ctx.save();
+      ctx.fillStyle = 'rgba(11, 13, 20, 0.88)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.beginPath(); ctx.roundRect(610, 45, 320, 415, 16); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8'; ctx.font = '700 11px ui-monospace, monospace';
+      ctx.fillText('FIRST LAW: ΔE_int = Q - W  (kJ)', 635, 75);
+
+      const zeroY = 265;
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(630, zeroY); ctx.lineTo(910, zeroY); ctx.stroke();
+
+      const eBars = [
+        { lbl: 'Heat Q', val: s.Q_J / 1000, col: '#fb7185', x: 655 },
+        { lbl: 'Work W', val: s.W_J / 1000, col: '#34d399', x: 745 },
+        { lbl: 'ΔE_int', val: s.dU_J / 1000, col: '#c084fc', x: 835 }
+      ];
+      eBars.forEach(b => {
+        const bh = Math.max(-145, Math.min(145, b.val * 24));
+        ctx.fillStyle = b.col;
+        ctx.fillRect(b.x, bh >= 0 ? zeroY - bh : zeroY, 44, Math.abs(bh));
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(b.lbl, b.x - 2, 435);
+        ctx.fillText(`${b.val >= 0 ? '+' : ''}${b.val.toFixed(2)}`, b.x - 2, bh >= 0 ? zeroY - bh - 8 : zeroY - bh + 16);
+      });
+      ctx.restore();
+
+      // Update Sidebar Telemetry
+      document.getElementById('wRead').textContent = `${s.W_J >= 0 ? '+' : ''}${(s.W_J / 1000).toFixed(2)} kJ`;
+      document.getElementById('qRead').textContent = `${s.Q_J >= 0 ? '+' : ''}${(s.Q_J / 1000).toFixed(2)} kJ`;
+      document.getElementById('uRead').textContent = `${s.dU_J >= 0 ? '+' : ''}${(s.dU_J / 1000).toFixed(2)} kJ`;
+      document.getElementById('tfRead').textContent = `${s.Tf.toFixed(0)} K`;
+      document.getElementById('piRead').textContent = `${s.Pi.toFixed(2)} atm, ${s.Vi}L`;
+      document.getElementById('pfRead').textContent = `${s.Pf.toFixed(2)} atm, ${s.Vf}L`;
+
+      document.getElementById('viLbl').textContent = `${s.Vi.toFixed(1)} L`;
+      document.getElementById('vfLbl').textContent = `${s.Vf.toFixed(1)} L`;
+      document.getElementById('tiLbl').textContent = `${s.Ti.toFixed(0)} K`;
+    }
+
+    [viSlider, vfSlider, tiSlider].forEach(el => el.addEventListener('input', render));
+
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        process = btn.dataset.proc;
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
