@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAB // 01 — Boat-River Relative Velocity | STEM.LAB</title>
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: rgba(15, 17, 26, 0.78);
+      --surface-solid: #0b0d14;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.22);
+      --text: #f8fafc;
+      --muted: #8e96aa;
+      --accent: #38bdf8;
+      --emerald: #34d399;
+      --amber: #f59e0b;
+      --rose: #fb7185;
+      --violet: #c084fc;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.12), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(192, 132, 252, 0.08), transparent 40%);
+    }
+    .film-grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    /* TOP GLASS NAVBAR */
+    .topbar {
+      position: relative; z-index: 10;
+      margin: 1rem 1.25rem 0;
+      padding: 0.7rem 1.25rem;
+      background: var(--surface);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-logo {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--text); font-weight: 800; font-size: 0.95rem;
+    }
+    .star {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      color: #050508; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
+    }
+    .lab-badge {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14); color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill-btn {
+      background: rgba(255,255,255,0.04); color: var(--text);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active {
+      background: var(--accent); color: #050508; border-color: var(--accent);
+    }
+    .back-btn {
+      text-decoration: none; color: var(--text); font-size: 0.82rem; font-weight: 700;
+      padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--border-bright);
+      background: rgba(255,255,255,0.05); transition: all 0.2s;
+    }
+    .back-btn:hover { background: #fff; color: #050508; }
+
+    /* MAIN WORKSPACE */
+    .workspace {
+      position: relative; z-index: 2;
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 390px;
+      gap: 1.25rem; padding: 1.25rem;
+      max-width: 1600px; width: 100%; margin: 0 auto;
+    }
+    @media (max-width: 1080px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+    .canvas-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1rem;
+      display: flex; flex-direction: column; gap: 0.85rem;
+      backdrop-filter: blur(16px); position: relative;
+    }
+    .canvas-header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem;
+      padding: 0 0.25rem;
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.78rem; color: var(--muted); }
+    .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    canvas {
+      width: 100%; height: 520px; display: block;
+      background: #060913; border: 1px solid var(--border); border-radius: 14px;
+      cursor: grab;
+    }
+    canvas:active { cursor: grabbing; }
+
+    /* TRANSPORT BAR */
+    .transport {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;
+      padding: 0.5rem 0.25rem 0;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.06); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.55rem 1rem; font-size: 0.84rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.12); }
+    .ctrl-btn.primary { background: var(--accent); color: #050508; border-color: var(--accent); }
+    .ctrl-btn.warn { background: rgba(245, 158, 11, 0.15); color: var(--amber); border-color: rgba(245, 158, 11, 0.4); }
+
+    /* RIGHT SIDEBAR CONTROLS */
+    .sidebar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1.35rem;
+      display: flex; flex-direction: column; gap: 1.15rem;
+      backdrop-filter: blur(16px);
+    }
+    .panel-title {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--accent); font-weight: 800; margin-bottom: -0.4rem;
+    }
+    .telemetry-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+      background: var(--surface-solid); padding: 0.85rem;
+      border-radius: 14px; border: 1px solid var(--border);
+    }
+    .stat-box { font-size: 0.75rem; color: var(--muted); }
+    .stat-box strong {
+      display: block; font-family: var(--mono); font-size: 1.05rem;
+      color: var(--text); margin-top: 0.15rem;
+    }
+    .slider-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .slider-group label {
+      display: flex; justify-content: space-between; font-size: 0.84rem; font-weight: 600;
+    }
+    .slider-group label span.val { font-family: var(--mono); color: var(--accent); }
+    input[type="range"] {
+      width: 100%; accent-color: var(--accent); cursor: pointer;
+    }
+    .toggles-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+      font-size: 0.8rem; color: #cbd5e1;
+    }
+    .toggles-grid label {
+      display: flex; align-items: center; gap: 0.45rem; cursor: pointer;
+      background: rgba(255,255,255,0.03); padding: 0.45rem 0.65rem;
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+    .formula-card {
+      background: var(--surface-solid); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.85rem; font-size: 0.8rem; color: var(--muted); line-height: 1.55;
+    }
+    .formula-card code {
+      display: block; font-family: var(--mono); color: var(--emerald);
+      margin-bottom: 0.3rem; font-size: 0.84rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="film-grain"></div>
+
+  <header class="topbar">
+    <div class="brand-group">
+      <a href="../index.html" class="brand-logo"><span class="star">✪</span> STEM.LAB</a>
+      <span class="lab-badge">LAB // 01 • KINEMATICS</span>
+    </div>
+    <div class="preset-bar">
+      <button class="pill-btn" id="preShortestTime">⏱️ Shortest Time (θ = 0°)</button>
+      <button class="pill-btn" id="preZeroDrift">🎯 Shortest Path (Zero Drift)</button>
+      <button class="pill-btn" id="preFastRiver">🌊 Strong Current</button>
+    </div>
+    <a href="../index.html" class="back-btn">← Back to Hub</a>
+  </header>
+
+  <main class="workspace">
+    <!-- LEFT: SIMULATION CANVAS -->
+    <section class="canvas-card">
+      <div class="canvas-header">
+        <div class="legend">
+          <span><i class="dot" style="background:#38bdf8"></i> v⃗_br (Boat rel. River)</span>
+          <span><i class="dot" style="background:#f59e0b"></i> v⃗_rg (River Current)</span>
+          <span><i class="dot" style="background:#34d399"></i> v⃗_bg (Resultant Ground)</span>
+          <span><i class="dot" style="background:#fb7185"></i> Target Flag (Draggable)</span>
+        </div>
+        <span style="font-size:0.76rem; color:var(--muted);">💡 Tip: Drag the cyan arrow tip on the boat or the red flag</span>
+      </div>
+
+      <canvas id="riverCanvas" width="960" height="520"></canvas>
+
+      <div class="transport">
+        <div class="btn-group">
+          <button class="ctrl-btn primary" id="playBtn">▶ Launch Boat</button>
+          <button class="ctrl-btn" id="stepBtn">⏭ Step +0.05s</button>
+          <button class="ctrl-btn" id="slowBtn">🐢 Slow-Mo: OFF</button>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn" id="clearTrailsBtn">🧹 Clear Ghost Trails</button>
+          <button class="ctrl-btn warn" id="resetBtn">↺ Reset Position</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: TELEMETRY & CONTROLS -->
+    <aside class="sidebar">
+      <div class="panel-title">Live Telemetry</div>
+      <div class="telemetry-grid">
+        <div class="stat-box">Elapsed Time (t)<strong id="tRead">0.00 s</strong></div>
+        <div class="stat-box">Crossing Time (t_cross)<strong id="tCrossRead">10.00 s</strong></div>
+        <div class="stat-box">Horizontal Drift (Δx)<strong id="driftRead">0.0 m</strong></div>
+        <div class="stat-box">Ground Speed |v⃗_bg|<strong id="vbgRead">10.77 m/s</strong></div>
+        <div class="stat-box">v_x (East/West)<strong id="vxRead">+4.00 m/s</strong></div>
+        <div class="stat-box">v_y (North across)<strong id="vyRead">+10.00 m/s</strong></div>
+      </div>
+
+      <div class="panel-title">Parameters</div>
+      <div class="slider-group">
+        <label><span>Boat Speed in Water (v_br)</span><span class="val" id="vbrLbl">10.0 m/s</span></label>
+        <input type="range" id="vbrSlider" min="2" max="20" step="0.5" value="10" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>River Current Speed (v_rg)</span><span class="val" id="vrgLbl">4.0 m/s</span></label>
+        <input type="range" id="vrgSlider" min="0" max="15" step="0.5" value="4" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Heading Angle (θ from North)</span><span class="val" id="angLbl">0.0°</span></label>
+        <input type="range" id="angSlider" min="-75" max="75" step="0.5" value="0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>River Width (W)</span><span class="val" id="wLbl">100 m</span></label>
+        <input type="range" id="wSlider" min="50" max="160" step="10" value="100" />
+      </div>
+
+      <div class="panel-title">Visual Overlays</div>
+      <div class="toggles-grid">
+        <label><input type="checkbox" id="chkVectors" checked /> Velocity Vectors</label>
+        <label><input type="checkbox" id="chkTriangle" checked /> Vector Triangle</label>
+        <label><input type="checkbox" id="chkTrails" checked /> Keep Ghost Trails</label>
+        <label><input type="checkbox" id="chkTape" /> 📏 Measuring Tape</label>
+      </div>
+
+      <div class="formula-card">
+        <code>v⃗_bg = v⃗_br + v⃗_rg</code>
+        <code>v_x = v_br·sin(θ) + v_rg  |  v_y = v_br·cos(θ)</code>
+        <code>t_cross = W / (v_br·cos(θ))</code>
+        Zero drift requires <strong>sin(θ) = -v_rg / v_br</strong> (possible only when v_br &gt; v_rg).
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('riverCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const vbrSlider = document.getElementById('vbrSlider');
+    const vrgSlider = document.getElementById('vrgSlider');
+    const angSlider = document.getElementById('angSlider');
+    const wSlider = document.getElementById('wSlider');
+
+    const chkVectors = document.getElementById('chkVectors');
+    const chkTriangle = document.getElementById('chkTriangle');
+    const chkTrails = document.getElementById('chkTrails');
+    const chkTape = document.getElementById('chkTape');
+
+    let running = false;
+    let slowMo = false;
+    let time = 0;
+    let boatX = 0; // meters from launch X
+    let boatY = 0; // meters North from South bank
+    let currentTrail = [];
+    let ghostTrails = [];
+    let streamParticles = Array.from({ length: 55 }, () => ({
+      x: Math.random() * 960,
+      y: 80 + Math.random() * 360,
+      len: 18 + Math.random() * 22
+    }));
+
+    // Interactive targets on canvas
+    let flagX = 0; // meters relative to launch X
+    let tapeP1 = { x: 260, y: 430 };
+    let tapeP2 = { x: 460, y: 120 };
+    let dragging = null;
+
+    const originX = 360; // screen px for x = 0m
+    const pxPerMeter = 2.6;
+
+    function getParams() {
+      const vbr = parseFloat(vbrSlider.value);
+      const vrg = parseFloat(vrgSlider.value);
+      const deg = parseFloat(angSlider.value);
+      const rad = (deg * Math.PI) / 180;
+      const W = parseFloat(wSlider.value);
+      const vx = vbr * Math.sin(rad) + vrg;
+      const vy = vbr * Math.cos(rad);
+      const vbg = Math.hypot(vx, vy);
+      const tCross = vy > 0.01 ? W / vy : Infinity;
+      const expectedDrift = vx * tCross;
+      return { vbr, vrg, deg, rad, W, vx, vy, vbg, tCross, expectedDrift };
+    }
+
+    function getBankYs(W) {
+      const riverPx = W * pxPerMeter;
+      const southY = 445;
+      const northY = southY - riverPx;
+      return { southY, northY };
+    }
+
+    function worldToScreen(xm, ym, W) {
+      const { southY } = getBankYs(W);
+      return {
+        x: originX + xm * pxPerMeter,
+        y: southY - ym * pxPerMeter
+      };
+    }
+
+    function screenToWorld(sx, sy, W) {
+      const { southY } = getBankYs(W);
+      return {
+        x: (sx - originX) / pxPerMeter,
+        y: (southY - sy) / pxPerMeter
+      };
+    }
+
+    function updateReadouts() {
+      const p = getParams();
+      document.getElementById('vbrLbl').textContent = p.vbr.toFixed(1) + ' m/s';
+      document.getElementById('vrgLbl').textContent = p.vrg.toFixed(1) + ' m/s';
+      document.getElementById('angLbl').textContent = (p.deg >= 0 ? '+' : '') + p.deg.toFixed(1) + '°';
+      document.getElementById('wLbl').textContent = p.W.toFixed(0) + ' m';
+
+      document.getElementById('tRead').textContent = time.toFixed(2) + ' s';
+      document.getElementById('tCrossRead').textContent = p.tCross < 999 ? p.tCross.toFixed(2) + ' s' : '∞';
+      const driftNow = running || boatY > 0 ? boatX : p.expectedDrift;
+      document.getElementById('driftRead').textContent = (driftNow >= 0 ? '+' : '') + driftNow.toFixed(1) + ' m';
+      document.getElementById('vbgRead').textContent = p.vbg.toFixed(2) + ' m/s';
+      document.getElementById('vxRead').textContent = (p.vx >= 0 ? '+' : '') + p.vx.toFixed(2) + ' m/s';
+      document.getElementById('vyRead').textContent = '+' + p.vy.toFixed(2) + ' m/s';
+    }
+
+    function resetBoat(saveTrail = false) {
+      const p = getParams();
+      if (saveTrail && chkTrails.checked && currentTrail.length > 2) {
+        ghostTrails.push({
+          points: [...currentTrail],
+          W: p.W,
+          label: `θ=${p.deg.toFixed(1)}° | t=${time.toFixed(2)}s | Δx=${boatX.toFixed(1)}m`
+        });
+        if (ghostTrails.length > 4) ghostTrails.shift();
+      }
+      running = false;
+      time = 0;
+      boatX = 0;
+      boatY = 0;
+      currentTrail = [{ x: 0, y: 0 }];
+      document.getElementById('playBtn').textContent = '▶ Launch Boat';
+      updateReadouts();
+    }
+
+    function stepPhysics(dt) {
+      const p = getParams();
+      if (boatY >= p.W) {
+        running = false;
+        document.getElementById('playBtn').textContent = '↺ Replay';
+        return;
+      }
+      const remY = p.W - boatY;
+      const stepTime = Math.min(dt, remY / Math.max(0.001, p.vy));
+      time += stepTime;
+      boatX += p.vx * stepTime;
+      boatY += p.vy * stepTime;
+      currentTrail.push({ x: boatX, y: boatY });
+
+      if (boatY >= p.W - 1e-4) {
+        boatY = p.W;
+        running = false;
+        document.getElementById('playBtn').textContent = '↺ Replay';
+      }
+      updateReadouts();
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, label) {
+      const head = 9;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - head * Math.cos(angle - Math.PI / 6), y2 - head * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - head * Math.cos(angle + Math.PI / 6), y2 - head * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = '700 12px ui-monospace, monospace';
+        ctx.fillText(label, x2 + 8, y2 - 6);
+      }
+      ctx.restore();
+    }
+
+    function render() {
+      const p = getParams();
+      const { southY, northY } = getBankYs(p.W);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Banks
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, northY);
+      ctx.fillRect(0, southY, canvas.width, canvas.height - southY);
+
+      // Water Gradient
+      const waterGrad = ctx.createLinearGradient(0, northY, 0, southY);
+      waterGrad.addColorStop(0, '#07192f');
+      waterGrad.addColorStop(0.5, '#0a2240');
+      waterGrad.addColorStop(1, '#07192f');
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(0, northY, canvas.width, southY - northY);
+
+      // Coordinate Grid & Meter Markers
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      for (let m = -120; m <= 220; m += 20) {
+        const sx = originX + m * pxPerMeter;
+        ctx.beginPath(); ctx.moveTo(sx, northY); ctx.lineTo(sx, southY); ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.font = '11px ui-monospace, monospace';
+        ctx.fillText(`${m}m`, sx - 12, northY - 8);
+      }
+
+      // Zero Drift Reference Dashed Line
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(originX, southY); ctx.lineTo(originX, northY); ctx.stroke();
+      ctx.restore();
+
+      // Animated River Streamlines
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.16)';
+      ctx.lineWidth = 1.5;
+      streamParticles.forEach(sp => {
+        sp.x += p.vrg * 0.35;
+        if (sp.x > canvas.width + 30) sp.x = -30;
+        if (sp.y > northY + 10 && sp.y < southY - 10) {
+          ctx.beginPath();
+          ctx.moveTo(sp.x, sp.y);
+          ctx.lineTo(sp.x + sp.len, sp.y);
+          ctx.stroke();
+        }
+      });
+
+      // Bank Borders
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, northY); ctx.lineTo(canvas.width, northY);
+      ctx.moveTo(0, southY); ctx.lineTo(canvas.width, southY);
+      ctx.stroke();
+
+      // Ghost Trails from Previous Runs
+      if (chkTrails.checked) {
+        ghostTrails.forEach(gt => {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          gt.points.forEach((pt, idx) => {
+            const s = worldToScreen(pt.x, pt.y, p.W);
+            idx === 0 ? ctx.moveTo(s.x, s.y) : ctx.lineTo(s.x, s.y);
+          });
+          ctx.stroke();
+          const last = gt.points[gt.points.length - 1];
+          const sl = worldToScreen(last.x, last.y, p.W);
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '11px ui-monospace, monospace';
+          ctx.fillText(gt.label, sl.x - 45, sl.y - 22);
+          ctx.restore();
+        });
+      }
+
+      // Current Active Trail
+      if (currentTrail.length > 1) {
+        ctx.save();
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        currentTrail.forEach((pt, idx) => {
+          const s = worldToScreen(pt.x, pt.y, p.W);
+          idx === 0 ? ctx.moveTo(s.x, s.y) : ctx.lineTo(s.x, s.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Target Flag on North Bank
+      const flagPos = worldToScreen(flagX, p.W, p.W);
+      ctx.save();
+      ctx.strokeStyle = '#fb7185';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(flagPos.x, flagPos.y); ctx.lineTo(flagPos.x, flagPos.y - 28); ctx.stroke();
+      ctx.fillStyle = '#fb7185';
+      ctx.beginPath();
+      ctx.moveTo(flagPos.x, flagPos.y - 28);
+      ctx.lineTo(flagPos.x + 18, flagPos.y - 21);
+      ctx.lineTo(flagPos.x, flagPos.y - 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Boat Rendering
+      const bScreen = worldToScreen(boatX, boatY, p.W);
+      ctx.save();
+      ctx.translate(bScreen.x, bScreen.y);
+      ctx.rotate(p.rad);
+      ctx.fillStyle = '#38bdf8';
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(11, 14);
+      ctx.lineTo(0, 9);
+      ctx.lineTo(-11, 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // Velocity Vectors on Boat
+      const vScale = 6.5;
+      if (chkVectors.checked) {
+        const vbrTipX = bScreen.x + p.vbr * Math.sin(p.rad) * vScale;
+        const vbrTipY = bScreen.y - p.vbr * Math.cos(p.rad) * vScale;
+        const vrgTipX = bScreen.x + p.vrg * vScale;
+        const vrgTipY = bScreen.y;
+        const vbgTipX = bScreen.x + p.vx * vScale;
+        const vbgTipY = bScreen.y - p.vy * vScale;
+
+        drawArrow(bScreen.x, bScreen.y, vrgTipX, vrgTipY, '#f59e0b', 'v⃗_rg');
+        drawArrow(bScreen.x, bScreen.y, vbgTipX, vbgTipY, '#34d399', 'v⃗_bg');
+        drawArrow(bScreen.x, bScreen.y, vbrTipX, vbrTipY, '#38bdf8', 'v⃗_br');
+
+        // Draggable handle ring on v_br tip
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(vbrTipX, vbrTipY, 7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Head-to-Tail Vector Addition Triangle Box (Top Left Overlay)
+      if (chkTriangle.checked) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(11, 13, 20, 0.86)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(18, 52, 205, 145, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 11px ui-monospace, monospace';
+        ctx.fillText('VECTOR TRIANGLE: v⃗_bg = v⃗_br + v⃗_rg', 30, 72);
+
+        const triOx = 95, triOy = 175, tScale = 4.6;
+        const brX = triOx + p.vbr * Math.sin(p.rad) * tScale;
+        const brY = triOy - p.vbr * Math.cos(p.rad) * tScale;
+        const bgX = brX + p.vrg * tScale;
+        const bgY = brY;
+
+        drawArrow(triOx, triOy, brX, brY, '#38bdf8', '');
+        drawArrow(brX, brY, bgX, bgY, '#f59e0b', '');
+        drawArrow(triOx, triOy, bgX, bgY, '#34d399', '');
+        ctx.restore();
+      }
+
+      // Draggable Measuring Tape
+      if (chkTape.checked) {
+        ctx.save();
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(tapeP1.x, tapeP1.y);
+        ctx.lineTo(tapeP2.x, tapeP2.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        [tapeP1, tapeP2].forEach(pt => {
+          ctx.fillStyle = '#c084fc';
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2); ctx.fill();
+        });
+
+        const distMeters = Math.hypot(tapeP2.x - tapeP1.x, tapeP2.y - tapeP1.y) / pxPerMeter;
+        const midX = (tapeP1.x + tapeP2.x) / 2;
+        const midY = (tapeP1.y + tapeP2.y) / 2;
+        ctx.fillStyle = '#050508';
+        ctx.fillRect(midX - 38, midY - 22, 76, 20);
+        ctx.fillStyle = '#c084fc';
+        ctx.font = '700 12px ui-monospace, monospace';
+        ctx.fillText(`${distMeters.toFixed(1)} m`, midX - 24, midY - 8);
+        ctx.restore();
+      }
+    }
+
+    function loop() {
+      if (running) {
+        stepPhysics(slowMo ? (1 / 60) * 0.25 : 1 / 60);
+      }
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // UI Controls & Presets
+    [vbrSlider, vrgSlider, angSlider, wSlider].forEach(s => {
+      s.addEventListener('input', () => {
+        if (!running && boatY === 0) updateReadouts();
+        else updateReadouts();
+      });
+    });
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      const p = getParams();
+      if (boatY >= p.W) {
+        resetBoat(true);
+        running = true;
+        document.getElementById('playBtn').textContent = '⏸ Pause';
+      } else {
+        running = !running;
+        document.getElementById('playBtn').textContent = running ? '⏸ Pause' : '▶ Resume';
+      }
+    });
+
+    document.getElementById('stepBtn').addEventListener('click', () => {
+      running = false;
+      stepPhysics(0.05);
+      document.getElementById('playBtn').textContent = '▶ Resume';
+    });
+
+    document.getElementById('slowBtn').addEventListener('click', e => {
+      slowMo = !slowMo;
+      e.target.textContent = slowMo ? '🐢 Slow-Mo: 0.25x' : '🐢 Slow-Mo: OFF';
+      e.target.classList.toggle('primary', slowMo);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => resetBoat(true));
+    document.getElementById('clearTrailsBtn').addEventListener('click', () => {
+      ghostTrails = [];
+    });
+
+    // Presets
+    document.getElementById('preShortestTime').addEventListener('click', () => {
+      resetBoat(true);
+      angSlider.value = 0;
+      updateReadouts();
+    });
+
+    document.getElementById('preZeroDrift').addEventListener('click', () => {
+      resetBoat(true);
+      const vbr = parseFloat(vbrSlider.value);
+      const vrg = parseFloat(vrgSlider.value);
+      if (vrg < vbr) {
+        const thetaDeg = (-Math.asin(vrg / vbr) * 180) / Math.PI;
+        angSlider.value = thetaDeg.toFixed(1);
+      } else {
+        angSlider.value = -75;
+      }
+      updateReadouts();
+    });
+
+    document.getElementById('preFastRiver').addEventListener('click', () => {
+      resetBoat(true);
+      vbrSlider.value = 10;
+      vrgSlider.value = 8;
+      angSlider.value = 0;
+      updateReadouts();
+    });
+
+    // Direct Canvas Dragging (Vector Tip, Flag, Measuring Tape)
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      const m = getMousePos(e);
+      const p = getParams();
+      const bScreen = worldToScreen(boatX, boatY, p.W);
+      const vbrTipX = bScreen.x + p.vbr * Math.sin(p.rad) * 6.5;
+      const vbrTipY = bScreen.y - p.vbr * Math.cos(p.rad) * 6.5;
+      const flagPos = worldToScreen(flagX, p.W, p.W);
+
+      if (chkTape.checked && Math.hypot(m.x - tapeP1.x, m.y - tapeP1.y) < 15) dragging = 'tape1';
+      else if (chkTape.checked && Math.hypot(m.x - tapeP2.x, m.y - tapeP2.y) < 15) dragging = 'tape2';
+      else if (Math.hypot(m.x - vbrTipX, m.y - vbrTipY) < 18) dragging = 'vector';
+      else if (Math.hypot(m.x - flagPos.x, m.y - (flagPos.y - 14)) < 22) dragging = 'flag';
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const m = getMousePos(e);
+      const p = getParams();
+      if (dragging === 'tape1') { tapeP1 = m; }
+      else if (dragging === 'tape2') { tapeP2 = m; }
+      else if (dragging === 'flag') {
+        const w = screenToWorld(m.x, m.y, p.W);
+        flagX = Math.max(-100, Math.min(200, w.x));
+      } else if (dragging === 'vector') {
+        const bScreen = worldToScreen(boatX, boatY, p.W);
+        const dx = m.x - bScreen.x;
+        const dy = bScreen.y - m.y;
+        const deg = Math.max(-75, Math.min(75, (Math.atan2(dx, Math.max(10, dy)) * 180) / Math.PI));
+        angSlider.value = deg.toFixed(1);
+        updateReadouts();
+      }
+    });
+
+    window.addEventListener('mouseup', () => { dragging = null; });
+
+    resetBoat(false);
+    loop();
+  </script>
+</body>
+</html>

@@ -41,7 +41,6 @@
       color: var(--text);
       line-height: 1.5;
       overflow-x: hidden;
-      selection-background-color: var(--physics);
     }
 
     ::selection {
@@ -360,7 +359,7 @@
       border-top: 1px solid var(--border);
     }
     .hero-desc {
-      max-width: 540px;
+      max-width: 560px;
       color: var(--muted);
       font-size: 1.08rem;
       line-height: 1.65;
@@ -574,7 +573,6 @@
       transform-style: preserve-3d;
       transition: transform 0.35s var(--ease-out-expo), border-color 0.35s;
     }
-    /* Spotlight Radial Glow following Mouse */
     .sim-card::before {
       content: "";
       position: absolute;
@@ -967,7 +965,7 @@
           <span>STEM.LAB</span>
         </a>
         <div class="nav-links">
-          <a href="#simulations">Simulations</a>
+          <a href="#simulations">Simulations (7)</a>
           <a href="#architecture">Engine Specs</a>
           <a href="#workflow">How It Works</a>
         </div>
@@ -981,7 +979,7 @@
     <section class="hero">
       <div class="status-pill">
         <span class="pulse-dot"></span>
-        <span>100% Offline-Ready HTML5 Simulation Suite</span>
+        <span>100% Offline-Ready HTML5 Simulation Suite • University Calculus Edition</span>
       </div>
 
       <h1 class="hero-title">
@@ -992,11 +990,11 @@
 
       <div class="hero-bottom">
         <p class="hero-desc">
-          Interactive <strong>Physics I</strong>, <strong>Chemistry</strong>, and <strong>Calculus I</strong> simulations engineered with zero external dependencies. Run them live in your browser or download standalone <code>.html</code> files for 100% offline study.
+          Interactive <strong>Calculus-Based Physics I</strong>, <strong>Chemistry</strong>, and <strong>Calculus I</strong> simulations engineered with zero external dependencies. Run them live in your browser or download standalone <code>.html</code> files for 100% offline study.
         </p>
         <div class="hero-actions">
           <a href="#simulations" class="btn-primary" data-cursor="EXPLORE">
-            <span>Explore Laboratories</span>
+            <span>Explore All 7 Labs</span>
             <span>↘</span>
           </a>
           <a id="heroZipBtn" href="https://github.com/EctoHuman/stem-sims/archive/refs/heads/main.zip" class="btn-ghost" data-cursor="SAVE ALL">
@@ -1010,20 +1008,22 @@
     <div class="marquee-section" aria-hidden="true">
       <div class="marquee-track" id="marqueeTrack">
         <div class="marquee-item">
-          <span>PHYSICS I KINEMATICS</span><span class="star">✪</span>
-          <span>IDEAL GAS THERMODYNAMICS</span><span class="star">✪</span>
-          <span>CALCULUS I DERIVATIVES</span><span class="star">✪</span>
+          <span>VECTOR KINEMATICS</span><span class="star">✪</span>
+          <span>WORK INTEGRALS ∫ F(x) dx</span><span class="star">✪</span>
+          <span>ROTATIONAL INERTIA I = ∫ r² dm</span><span class="star">✪</span>
+          <span>THERMODYNAMIC P-V CYCLES</span><span class="star">✪</span>
+          <span>IDEAL GAS KINETIC THEORY</span><span class="star">✪</span>
+          <span>CALCULUS DERIVATIVE LIMITS</span><span class="star">✪</span>
           <span>100% OFFLINE STANDALONE .HTML</span><span class="star">✪</span>
-          <span>REAL-TIME VECTOR DECOMPOSITION</span><span class="star">✪</span>
-          <span>60 FPS CANVAS ENGINE</span><span class="star">✪</span>
         </div>
         <div class="marquee-item">
-          <span>PHYSICS I KINEMATICS</span><span class="star">✪</span>
-          <span>IDEAL GAS THERMODYNAMICS</span><span class="star">✪</span>
-          <span>CALCULUS I DERIVATIVES</span><span class="star">✪</span>
+          <span>VECTOR KINEMATICS</span><span class="star">✪</span>
+          <span>WORK INTEGRALS ∫ F(x) dx</span><span class="star">✪</span>
+          <span>ROTATIONAL INERTIA I = ∫ r² dm</span><span class="star">✪</span>
+          <span>THERMODYNAMIC P-V CYCLES</span><span class="star">✪</span>
+          <span>IDEAL GAS KINETIC THEORY</span><span class="star">✪</span>
+          <span>CALCULUS DERIVATIVE LIMITS</span><span class="star">✪</span>
           <span>100% OFFLINE STANDALONE .HTML</span><span class="star">✪</span>
-          <span>REAL-TIME VECTOR DECOMPOSITION</span><span class="star">✪</span>
-          <span>60 FPS CANVAS ENGINE</span><span class="star">✪</span>
         </div>
       </div>
     </div>
@@ -1040,18 +1040,18 @@
       <!-- FILTER & SEARCH BAR -->
       <div class="controls-bar reveal">
         <div class="tabs" id="filterTabs">
-          <button class="tab active" data-filter="all">All Labs <span class="tab-count">(4)</span></button>
-          <button class="tab" data-filter="physics">Physics I <span class="tab-count">(2)</span></button>
+          <button class="tab active" data-filter="all">All Labs <span class="tab-count">(7)</span></button>
+          <button class="tab" data-filter="physics">Physics I (Calculus) <span class="tab-count">(5)</span></button>
           <button class="tab" data-filter="chemistry">Chemistry <span class="tab-count">(1)</span></button>
           <button class="tab" data-filter="math">Calculus I <span class="tab-count">(1)</span></button>
         </div>
         <div class="search-wrap">
           <span class="search-icon">⌕</span>
-          <input type="search" id="searchInput" class="search-box" placeholder="Search formula, vector, gas, tangent..." />
+          <input type="search" id="searchInput" class="search-box" placeholder="Search formula, integral, torque, gas, tangent..." />
         </div>
       </div>
 
-      <!-- SIMULATION CARDS GRID -->
+      <!-- SIMULATION CARDS GRID (ALL 7 LABS) -->
       <div class="sim-grid" id="simGrid">
         <!-- CARD 01: BOAT RIVER -->
         <article class="sim-card reveal" data-subject="physics" data-keywords="relative velocity boat river vectors drift kinematics shortest time path">
@@ -1060,7 +1060,7 @@
               <canvas id="previewBoat"></canvas>
               <div class="preview-overlay">
                 <span class="card-index">LAB // 01</span>
-                <span class="badge physics">Physics I</span>
+                <span class="badge physics">Physics I • Ch. 3–4</span>
               </div>
               <span class="formula-tag">v⃗_bg = v⃗_br + v⃗_rg</span>
             </div>
@@ -1081,23 +1081,23 @@
         </article>
 
         <!-- CARD 02: PENDULUM -->
-        <article class="sim-card reveal" data-subject="physics" data-keywords="pendulum shm simple harmonic motion energy conservation period gravity">
+        <article class="sim-card reveal" data-subject="physics" data-keywords="pendulum shm simple harmonic motion energy conservation period gravity rk4">
           <div>
             <div class="card-preview">
               <canvas id="previewPendulum"></canvas>
               <div class="preview-overlay">
                 <span class="card-index">LAB // 02</span>
-                <span class="badge physics">Physics I</span>
+                <span class="badge physics">Physics I • Ch. 15</span>
               </div>
-              <span class="formula-tag">T = 2π√(L / g)</span>
+              <span class="formula-tag">d²θ/dt² = -(g/L)sinθ</span>
             </div>
             <div class="card-body">
-              <h2>Pendulum & Energy Conservation</h2>
-              <p>Solve exact nonlinear pendulum motion in real time while inspecting live Kinetic, Potential, and Total Mechanical Energy bar charts.</p>
+              <h2>Pendulum &amp; Harmonic Motion</h2>
+              <p>Solve exact nonlinear pendulum differential equations in real time while inspecting live Kinetic, Potential, and Total Mechanical Energy bar charts.</p>
               <div class="chip-row">
-                <span class="chip">Harmonic Motion</span>
+                <span class="chip">Nonlinear RK4 Solver</span>
                 <span class="chip">Live Energy Bars</span>
-                <span class="chip">Variable Gravity</span>
+                <span class="chip">Wave Graph θ(t)</span>
               </div>
             </div>
           </div>
@@ -1108,23 +1108,23 @@
         </article>
 
         <!-- CARD 03: IDEAL GAS LAW -->
-        <article class="sim-card reveal" data-subject="chemistry" data-keywords="ideal gas law pv=nrt pressure temperature volume moles kinetic molecular">
+        <article class="sim-card reveal" data-subject="chemistry" data-keywords="ideal gas law pv=nrt pressure temperature volume moles kinetic molecular maxwell boltzmann">
           <div>
             <div class="card-preview">
               <canvas id="previewGas"></canvas>
               <div class="preview-overlay">
                 <span class="card-index">LAB // 03</span>
-                <span class="badge chemistry">Chemistry</span>
+                <span class="badge chemistry">Chemistry • Gas Laws</span>
               </div>
               <span class="formula-tag">P·V = n·R·T</span>
             </div>
             <div class="card-body">
               <h2>Ideal Gas Law Lab (PV = nRT)</h2>
-              <p>Compress the movable piston, heat the chamber, or inject gas particles to observe elastic molecular collisions and live pressure readouts.</p>
+              <p>Compress the movable piston, heat the chamber, or switch gas species (He, N₂, Ar) to observe elastic collisions and Maxwell-Boltzmann speed distributions.</p>
               <div class="chip-row">
                 <span class="chip">Kinetic Theory</span>
-                <span class="chip">Dynamic Piston</span>
-                <span class="chip">Thermal Scaling</span>
+                <span class="chip">Draggable Piston</span>
+                <span class="chip">Maxwell Histogram</span>
               </div>
             </div>
           </div>
@@ -1141,17 +1141,17 @@
               <canvas id="previewMath"></canvas>
               <div class="preview-overlay">
                 <span class="card-index">LAB // 04</span>
-                <span class="badge math">Calculus I</span>
+                <span class="badge math">Calculus I • Limits</span>
               </div>
               <span class="formula-tag">lim(Δx→0) Δy/Δx</span>
             </div>
             <div class="card-body">
               <h2>Secant to Tangent Visualizer</h2>
-              <p>Animate Δx approaching zero across polynomial and trigonometric curves to watch the secant line converge to the exact derivative slope.</p>
+              <p>Animate Δx approaching zero across polynomial, trig, and exponential curves to watch the secant line converge to the exact derivative slope f'(x).</p>
               <div class="chip-row">
                 <span class="chip">Limit Convergence</span>
-                <span class="chip">Instantaneous Rate</span>
-                <span class="chip">Error Readout</span>
+                <span class="chip">Derivative Curve f'(x)</span>
+                <span class="chip">Error Table</span>
               </div>
             </div>
           </div>
@@ -1160,12 +1160,93 @@
             <a href="math/derivative-tangent.html" download="Secant-To-Tangent-Calculus.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
           </div>
         </article>
+
+        <!-- CARD 05: WORK BY A VARIABLE FORCE -->
+        <article class="sim-card reveal" data-subject="physics" data-keywords="work variable force integral riemann kinetic energy power calculus">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewWork"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 05</span>
+                <span class="badge physics">Physics I • Ch. 7–8</span>
+              </div>
+              <span class="formula-tag">W = ∫ F(x) dx = ΔK</span>
+            </div>
+            <div class="card-body">
+              <h2>Work by a Variable Force</h2>
+              <p>Integrate spatially varying forces F(x) across custom bounds x_i → x_f with live Riemann rectangles, kinetic energy ΔK, and instantaneous power P = F⃗·v⃗.</p>
+              <div class="chip-row">
+                <span class="chip">Definite Integral ∫F dx</span>
+                <span class="chip">Work-Energy Theorem</span>
+                <span class="chip">Power dW/dt</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="physics/work-variable-force.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="physics/work-variable-force.html" download="Work-Variable-Force-Lab.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+
+        <!-- CARD 06: ROTATIONAL DYNAMICS -->
+        <article class="sim-card reveal" data-subject="physics" data-keywords="rotational dynamics moment of inertia torque angular momentum pulley disk hoop">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewRot"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 06</span>
+                <span class="badge physics">Physics I • Ch. 10–11</span>
+              </div>
+              <span class="formula-tag">Στ = I·(dω/dt)</span>
+            </div>
+            <div class="card-body">
+              <h2>Rotational Dynamics &amp; Inertia</h2>
+              <p>Unwind a falling mass from a solid disk, thin hoop, or sphere to measure moment of inertia I = ∫r²dm, angular acceleration α, and rotational kinetic energy.</p>
+              <div class="chip-row">
+                <span class="chip">Moment of Inertia I</span>
+                <span class="chip">Torque τ = r × F</span>
+                <span class="chip">Angular Momentum L</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="physics/rotational-dynamics.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="physics/rotational-dynamics.html" download="Rotational-Dynamics-Lab.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
+
+        <!-- CARD 07: THERMODYNAMIC CYCLES -->
+        <article class="sim-card reveal" data-subject="physics" data-keywords="thermodynamics pv diagram isothermal adiabatic isobaric isochoric work integral first law">
+          <div>
+            <div class="card-preview">
+              <canvas id="previewThermo"></canvas>
+              <div class="preview-overlay">
+                <span class="card-index">LAB // 07</span>
+                <span class="badge physics">Physics I • Ch. 20–21</span>
+              </div>
+              <span class="formula-tag">W = ∫ P(V) dV</span>
+            </div>
+            <div class="card-body">
+              <h2>Thermodynamic P-V Integrals</h2>
+              <p>Evaluate path integrals W = ∫P dV and the First Law (ΔE_int = Q - W) across Isothermal, Adiabatic (PV^γ = C), Isobaric, and Isochoric processes.</p>
+              <div class="chip-row">
+                <span class="chip">P-V Path Integral</span>
+                <span class="chip">Adiabatic PV^γ</span>
+                <span class="chip">First Law Balance</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="physics/thermodynamic-cycles.html" class="btn-card btn-launch" data-cursor="LAUNCH ↗">▶ Launch Lab</a>
+            <a href="physics/thermodynamic-cycles.html" download="Thermodynamic-Cycles-Lab.html" class="btn-card btn-download" data-cursor="SAVE ↓">⬇ Offline .html</a>
+          </div>
+        </article>
       </div>
 
       <!-- ARCHITECTURE METRICS BENTO -->
       <section class="bento-section reveal" id="architecture">
         <div class="eyebrow">02 // Built for Zero-Friction Learning</div>
-        <h2 class="section-title">Engineered for Classroom & Offline Reliability</h2>
+        <h2 class="section-title">Engineered for Classroom &amp; Offline Reliability</h2>
         <div class="bento-grid">
           <div class="bento-item">
             <div class="bento-num">100%</div>
@@ -1175,7 +1256,7 @@
           <div class="bento-item">
             <div class="bento-num">60 FPS</div>
             <div class="bento-label">Hardware Canvas</div>
-            <div class="bento-sub">Native HTML5 Canvas physics loops ensure smooth real-time vector and particle rendering.</div>
+            <div class="bento-sub">Native HTML5 Canvas physics loops ensure smooth real-time vector and integral rendering.</div>
           </div>
           <div class="bento-item">
             <div class="bento-num">0 KB</div>
@@ -1194,7 +1275,7 @@
       <section class="faq-section reveal" id="workflow">
         <div>
           <div class="eyebrow">03 // Documentation</div>
-          <h2 class="section-title">How to Use & Expand the Lab</h2>
+          <h2 class="section-title">How to Use &amp; Expand the Lab</h2>
           <p style="color: var(--muted); margin-top: 0.75rem; font-size: 0.95rem;">
             Designed so students can run experiments anywhere and contributors can add new simulations in minutes.
           </p>
@@ -1253,7 +1334,7 @@
           </button>
         </div>
         <div class="footer-meta">
-          <span>© 2026 STEM.LAB • Interactive Science & Mathematics Suite</span>
+          <span>© 2026 STEM.LAB • Interactive Science &amp; Mathematics Suite</span>
           <span id="liveClock">LOCAL TIME // --:--:--</span>
         </div>
         <div class="watermark">STEM.LAB</div>
@@ -1372,22 +1453,22 @@
     }
     drawAmbient();
 
-    // 4. LIVE MINI-SIMULATION PREVIEWS INSIDE EACH CARD
+    // 4. LIVE MINI-SIMULATION PREVIEWS INSIDE ALL 7 CARDS
     function setupMiniCanvases() {
-      // Card 1: Boat River Preview
-      const cBoat = document.getElementById('previewBoat');
-      const ctxB = cBoat.getContext('2d');
-      cBoat.width = 480; cBoat.height = 210;
+      const ids = [
+        'previewBoat', 'previewPendulum', 'previewGas',
+        'previewMath', 'previewWork', 'previewRot', 'previewThermo'
+      ];
+      const ctxs = {};
+      ids.forEach(id => {
+        const c = document.getElementById(id);
+        if (c) {
+          c.width = 480;
+          c.height = 210;
+          ctxs[id] = c.getContext('2d');
+        }
+      });
 
-      // Card 2: Pendulum Preview
-      const cPend = document.getElementById('previewPendulum');
-      const ctxP = cPend.getContext('2d');
-      cPend.width = 480; cPend.height = 210;
-
-      // Card 3: Gas Law Preview
-      const cGas = document.getElementById('previewGas');
-      const ctxG = cGas.getContext('2d');
-      cGas.width = 480; cGas.height = 210;
       const gasDots = Array.from({ length: 26 }, () => ({
         x: 40 + Math.random() * 400,
         y: 30 + Math.random() * 150,
@@ -1395,89 +1476,175 @@
         vy: (Math.random() - 0.5) * 3.2
       }));
 
-      // Card 4: Calculus Tangent Preview
-      const cMath = document.getElementById('previewMath');
-      const ctxM = cMath.getContext('2d');
-      cMath.width = 480; cMath.height = 210;
-
       let t = 0;
       function renderPreviews() {
         t += 0.025;
 
         // 1. BOAT RIVER MINI-SIM
-        ctxB.clearRect(0, 0, 480, 210);
-        ctxB.strokeStyle = 'rgba(56, 189, 248, 0.18)';
-        ctxB.lineWidth = 1.5;
-        for (let y = 35; y < 185; y += 30) {
-          const offset = (t * 40 + y) % 60;
-          ctxB.beginPath();
-          for (let x = -60; x < 480; x += 60) {
-            ctxB.moveTo(x + offset, y);
-            ctxB.lineTo(x + offset + 28, y);
+        if (ctxs.previewBoat) {
+          const ctxB = ctxs.previewBoat;
+          ctxB.clearRect(0, 0, 480, 210);
+          ctxB.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+          ctxB.lineWidth = 1.5;
+          for (let y = 35; y < 185; y += 30) {
+            const offset = (t * 40 + y) % 60;
+            ctxB.beginPath();
+            for (let x = -60; x < 480; x += 60) {
+              ctxB.moveTo(x + offset, y);
+              ctxB.lineTo(x + offset + 28, y);
+            }
+            ctxB.stroke();
           }
-          ctxB.stroke();
+          const progress = (t * 0.45) % 1;
+          const bx = 140 + progress * 150;
+          const by = 175 - progress * 135;
+          ctxB.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+          ctxB.setLineDash([4, 4]);
+          ctxB.beginPath(); ctxB.moveTo(140, 175); ctxB.lineTo(bx, by); ctxB.stroke();
+          ctxB.setLineDash([]);
+          ctxB.fillStyle = '#38bdf8';
+          ctxB.beginPath(); ctxB.arc(bx, by, 7, 0, Math.PI * 2); ctxB.fill();
         }
-        const progress = (t * 0.45) % 1;
-        const bx = 140 + progress * 150;
-        const by = 175 - progress * 135;
-        ctxB.strokeStyle = 'rgba(245, 158, 11, 0.5)';
-        ctxB.setLineDash([4, 4]);
-        ctxB.beginPath(); ctxB.moveTo(140, 175); ctxB.lineTo(bx, by); ctxB.stroke();
-        ctxB.setLineDash([]);
-        ctxB.fillStyle = '#38bdf8';
-        ctxB.beginPath(); ctxB.arc(bx, by, 7, 0, Math.PI * 2); ctxB.fill();
 
         // 2. PENDULUM MINI-SIM
-        ctxP.clearRect(0, 0, 480, 210);
-        const angle = 0.65 * Math.cos(t * 1.4);
-        const px = 210, py = 25, len = 135;
-        const bobX = px + Math.sin(angle) * len;
-        const bobY = py + Math.cos(angle) * len;
-        ctxP.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctxP.lineWidth = 2;
-        ctxP.beginPath(); ctxP.moveTo(px, py); ctxP.lineTo(bobX, bobY); ctxP.stroke();
-        ctxP.fillStyle = '#38bdf8';
-        ctxP.beginPath(); ctxP.arc(bobX, bobY, 12, 0, Math.PI * 2); ctxP.fill();
-        // Mini energy bars
-        const pe = Math.abs(Math.sin(angle / 2));
-        const ke = 1 - pe;
-        ctxP.fillStyle = '#34d399'; ctxP.fillRect(365, 165 - ke * 90, 16, ke * 90);
-        ctxP.fillStyle = '#c084fc'; ctxP.fillRect(390, 165 - pe * 90, 16, pe * 90);
+        if (ctxs.previewPendulum) {
+          const ctxP = ctxs.previewPendulum;
+          ctxP.clearRect(0, 0, 480, 210);
+          const angle = 0.65 * Math.cos(t * 1.4);
+          const px = 210, py = 25, len = 135;
+          const bobX = px + Math.sin(angle) * len;
+          const bobY = py + Math.cos(angle) * len;
+          ctxP.strokeStyle = 'rgba(255,255,255,0.25)';
+          ctxP.lineWidth = 2;
+          ctxP.beginPath(); ctxP.moveTo(px, py); ctxP.lineTo(bobX, bobY); ctxP.stroke();
+          ctxP.fillStyle = '#38bdf8';
+          ctxP.beginPath(); ctxP.arc(bobX, bobY, 12, 0, Math.PI * 2); ctxP.fill();
+          const pe = Math.abs(Math.sin(angle / 2));
+          const ke = 1 - pe;
+          ctxP.fillStyle = '#34d399'; ctxP.fillRect(365, 165 - ke * 90, 16, ke * 90);
+          ctxP.fillStyle = '#c084fc'; ctxP.fillRect(390, 165 - pe * 90, 16, pe * 90);
+        }
 
         // 3. IDEAL GAS MINI-SIM
-        ctxG.clearRect(0, 0, 480, 210);
-        ctxG.fillStyle = '#34d399';
-        gasDots.forEach(d => {
-          d.x += d.vx; d.y += d.vy;
-          if (d.x < 20 || d.x > 460) d.vx *= -1;
-          if (d.y < 20 || d.y > 190) d.vy *= -1;
-          ctxG.beginPath(); ctxG.arc(d.x, d.y, 4.5, 0, Math.PI * 2); ctxG.fill();
-        });
+        if (ctxs.previewGas) {
+          const ctxG = ctxs.previewGas;
+          ctxG.clearRect(0, 0, 480, 210);
+          ctxG.fillStyle = '#34d399';
+          gasDots.forEach(d => {
+            d.x += d.vx; d.y += d.vy;
+            if (d.x < 20 || d.x > 460) d.vx *= -1;
+            if (d.y < 20 || d.y > 190) d.vy *= -1;
+            ctxG.beginPath(); ctxG.arc(d.x, d.y, 4.5, 0, Math.PI * 2); ctxG.fill();
+          });
+        }
 
         // 4. CALCULUS TANGENT MINI-SIM
-        ctxM.clearRect(0, 0, 480, 210);
-        ctxM.strokeStyle = '#c084fc';
-        ctxM.lineWidth = 2.5;
-        ctxM.beginPath();
-        for (let x = 0; x <= 480; x += 4) {
-          const nx = (x - 240) / 70;
-          const y = 125 - Math.sin(nx) * 45;
-          x === 0 ? ctxM.moveTo(x, y) : ctxM.lineTo(x, y);
+        if (ctxs.previewMath) {
+          const ctxM = ctxs.previewMath;
+          ctxM.clearRect(0, 0, 480, 210);
+          ctxM.strokeStyle = '#c084fc';
+          ctxM.lineWidth = 2.5;
+          ctxM.beginPath();
+          for (let x = 0; x <= 480; x += 4) {
+            const nx = (x - 240) / 70;
+            const y = 125 - Math.sin(nx) * 45;
+            x === 0 ? ctxM.moveTo(x, y) : ctxM.lineTo(x, y);
+          }
+          ctxM.stroke();
+          const h = 0.15 + (Math.sin(t) + 1) * 0.7;
+          const x0 = -0.6, y0 = Math.sin(x0);
+          const x1 = x0 + h, y1 = Math.sin(x1);
+          const slope = (y1 - y0) / h;
+          ctxM.strokeStyle = '#f59e0b';
+          ctxM.lineWidth = 1.8;
+          ctxM.beginPath();
+          [-3, 3].forEach((val, idx) => {
+            const sx = 240 + val * 70;
+            const sy = 125 - (y0 + slope * (val - x0)) * 45;
+            idx === 0 ? ctxM.moveTo(sx, sy) : ctxM.lineTo(sx, sy);
+          });
+          ctxM.stroke();
         }
-        ctxM.stroke();
-        const h = 0.15 + (Math.sin(t) + 1) * 0.7;
-        const x0 = -0.6, y0 = Math.sin(x0);
-        const x1 = x0 + h, y1 = Math.sin(x1);
-        const slope = (y1 - y0) / h;
-        ctxM.strokeStyle = '#f59e0b';
-        ctxM.lineWidth = 1.8;
-        ctxM.beginPath();
-        [-3, 3].forEach((val, idx) => {
-          const sx = 240 + val * 70;
-          const sy = 125 - (y0 + slope * (val - x0)) * 45;
-          idx === 0 ? ctxM.moveTo(sx, sy) : ctxM.lineTo(sx, sy);
-        });
-        ctxM.stroke();
+
+        // 5. WORK VARIABLE FORCE INTEGRAL MINI-SIM
+        if (ctxs.previewWork) {
+          const ctxW = ctxs.previewWork;
+          ctxW.clearRect(0, 0, 480, 210);
+          const baseY = 150;
+          const sweepX = 110 + ((Math.sin(t * 0.9) + 1) * 0.5) * 260;
+
+          // Shaded Riemann rectangles
+          for (let x = 90; x < sweepX; x += 14) {
+            const fVal = Math.sin((x - 70) / 65) * 55;
+            ctxW.fillStyle = fVal >= 0 ? 'rgba(52, 211, 153, 0.28)' : 'rgba(251, 113, 133, 0.28)';
+            ctxW.fillRect(x, fVal >= 0 ? baseY - fVal : baseY, 12, Math.abs(fVal));
+          }
+          ctxW.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctxW.beginPath(); ctxW.moveTo(40, baseY); ctxW.lineTo(440, baseY); ctxW.stroke();
+
+          ctxW.strokeStyle = '#38bdf8'; ctxW.lineWidth = 2.5;
+          ctxW.beginPath();
+          for (let x = 60; x <= 420; x += 4) {
+            const y = baseY - Math.sin((x - 70) / 65) * 55;
+            x === 60 ? ctxW.moveTo(x, y) : ctxW.lineTo(x, y);
+          }
+          ctxW.stroke();
+        }
+
+        // 6. ROTATIONAL DYNAMICS MINI-SIM
+        if (ctxs.previewRot) {
+          const ctxR = ctxs.previewRot;
+          ctxR.clearRect(0, 0, 480, 210);
+          const cx = 190, cy = 105, r = 52;
+          const drop = ((t * 0.6) % 1) * 95;
+
+          ctxR.strokeStyle = '#94a3b8'; ctxR.lineWidth = 2;
+          ctxR.beginPath(); ctxR.moveTo(cx + r, cy); ctxR.lineTo(cx + r, 55 + drop); ctxR.stroke();
+          ctxR.fillStyle = '#34d399';
+          ctxR.fillRect(cx + r - 10, 55 + drop, 20, 20);
+
+          ctxR.save();
+          ctxR.translate(cx, cy);
+          ctxR.rotate(t * 2.4);
+          ctxR.strokeStyle = '#38bdf8'; ctxR.lineWidth = 4;
+          ctxR.beginPath(); ctxR.arc(0, 0, r, 0, Math.PI * 2); ctxR.stroke();
+          for (let i = 0; i < 4; i++) {
+            const a = (i * Math.PI) / 2;
+            ctxR.beginPath(); ctxR.moveTo(0, 0); ctxR.lineTo(Math.cos(a) * r, Math.sin(a) * r); ctxR.stroke();
+          }
+          ctxR.restore();
+        }
+
+        // 7. THERMODYNAMIC P-V INTEGRAL MINI-SIM
+        if (ctxs.previewThermo) {
+          const ctxT = ctxs.previewThermo;
+          ctxT.clearRect(0, 0, 480, 210);
+          const ox = 90, oy = 175;
+          const vEnd = 160 + ((Math.sin(t) + 1) * 0.5) * 180;
+
+          ctxT.fillStyle = 'rgba(56, 189, 248, 0.22)';
+          ctxT.beginPath();
+          ctxT.moveTo(130, oy);
+          for (let x = 130; x <= vEnd; x += 5) {
+            const y = oy - 9500 / (x - 40);
+            ctxT.lineTo(x, y);
+          }
+          ctxT.lineTo(vEnd, oy);
+          ctxT.closePath();
+          ctxT.fill();
+
+          ctxT.strokeStyle = '#f59e0b'; ctxT.lineWidth = 2.5;
+          ctxT.beginPath();
+          for (let x = 120; x <= 370; x += 4) {
+            const y = oy - 9500 / (x - 40);
+            x === 120 ? ctxT.moveTo(x, y) : ctxT.lineTo(x, y);
+          }
+          ctxT.stroke();
+
+          const dotY = oy - 9500 / (vEnd - 40);
+          ctxT.fillStyle = '#34d399';
+          ctxT.beginPath(); ctxT.arc(vEnd, dotY, 6, 0, Math.PI * 2); ctxT.fill();
+        }
 
         requestAnimationFrame(renderPreviews);
       }

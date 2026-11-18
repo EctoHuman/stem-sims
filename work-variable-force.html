@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAB // 05 — Work by a Variable Force & Work-Energy Theorem | STEM.LAB</title>
+  <style>
+    :root {
+      --bg: #050508;
+      --surface: rgba(15, 17, 26, 0.78);
+      --surface-solid: #0b0d14;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.22);
+      --text: #f8fafc;
+      --muted: #8e96aa;
+      --accent: #38bdf8;
+      --emerald: #34d399;
+      --amber: #f59e0b;
+      --rose: #fb7185;
+      --violet: #c084fc;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.12), transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(52, 211, 153, 0.08), transparent 40%);
+    }
+    .film-grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .topbar {
+      position: relative; z-index: 10; margin: 1rem 1.25rem 0; padding: 0.7rem 1.25rem;
+      background: var(--surface); backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: 999px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand-group { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-logo {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--text); font-weight: 800; font-size: 0.95rem;
+    }
+    .star {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--emerald));
+      color: #050508; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
+    }
+    .lab-badge {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14); color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill-btn {
+      background: rgba(255,255,255,0.04); color: var(--text);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active { background: var(--accent); color: #050508; border-color: var(--accent); }
+    .back-btn {
+      text-decoration: none; color: var(--text); font-size: 0.82rem; font-weight: 700;
+      padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--border-bright);
+      background: rgba(255,255,255,0.05); transition: all 0.2s;
+    }
+    .back-btn:hover { background: #fff; color: #050508; }
+
+    .workspace {
+      position: relative; z-index: 2; flex: 1; display: grid;
+      grid-template-columns: 1fr 390px; gap: 1.25rem; padding: 1.25rem;
+      max-width: 1600px; width: 100%; margin: 0 auto;
+    }
+    @media (max-width: 1080px) { .workspace { grid-template-columns: 1fr; } }
+    .canvas-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem;
+      backdrop-filter: blur(16px);
+    }
+    .canvas-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.78rem; color: var(--muted); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.35rem; }
+    canvas {
+      width: 100%; height: 520px; display: block;
+      background: #060913; border: 1px solid var(--border); border-radius: 14px; cursor: grab;
+    }
+    .transport { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.06); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.55rem 1rem; font-size: 0.84rem; font-weight: 700; cursor: pointer;
+    }
+    .ctrl-btn.primary { background: var(--accent); color: #050508; border-color: var(--accent); }
+    .ctrl-btn.warn { background: rgba(245, 158, 11, 0.15); color: var(--amber); border-color: rgba(245, 158, 11, 0.4); }
+
+    .sidebar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 22px; padding: 1.35rem; display: flex; flex-direction: column; gap: 1.05rem;
+      backdrop-filter: blur(16px);
+    }
+    .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 800; }
+    .telemetry-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+      background: var(--surface-solid); padding: 0.85rem; border-radius: 14px; border: 1px solid var(--border);
+    }
+    .stat-box { font-size: 0.74rem; color: var(--muted); }
+    .stat-box strong { display: block; font-family: var(--mono); font-size: 1.02rem; color: var(--text); margin-top: 0.15rem; }
+    .slider-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .slider-group label { display: flex; justify-content: space-between; font-size: 0.83rem; font-weight: 600; }
+    .slider-group label span.val { font-family: var(--mono); color: var(--accent); }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .formula-card {
+      background: var(--surface-solid); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.85rem; font-size: 0.79rem; color: var(--muted); line-height: 1.55;
+    }
+    .formula-card code { display: block; font-family: var(--mono); color: var(--emerald); margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="film-grain"></div>
+
+  <header class="topbar">
+    <div class="brand-group">
+      <a href="../index.html" class="brand-logo"><span class="star">✪</span> STEM.LAB</a>
+      <span class="lab-badge">LAB // 05 • WORK-ENERGY CALCULUS (CH. 7)</span>
+    </div>
+    <div class="preset-bar">
+      <button class="pill-btn active" data-fn="poly">Polynomial: F(x) = 12 - 0.5x²</button>
+      <button class="pill-btn" data-fn="spring">Nonlinear Spring: F(x) = -4x + 0.15x³</button>
+      <button class="pill-btn" data-fn="sin">Spatially Oscillating: F(x) = 15·sin(0.6x)</button>
+    </div>
+    <a href="../index.html" class="back-btn">← Back to Hub</a>
+  </header>
+
+  <main class="workspace">
+    <section class="canvas-card">
+      <div class="canvas-header">
+        <div class="legend">
+          <span><i class="dot" style="background:#34d399"></i>+Work Area (∫ F dx &gt; 0)</span>
+          <span><i class="dot" style="background:#fb7185"></i>-Work Area (∫ F dx &lt; 0)</span>
+          <span><i class="dot" style="background:#38bdf8"></i>Force Vector F⃗(x)</span>
+          <span><i class="dot" style="background:#f59e0b"></i>Velocity Vector v⃗(x)</span>
+        </div>
+        <span style="font-size:0.76rem; color:var(--muted);">💡 Drag the block or integration bounds x_i and x_f directly on the graph</span>
+      </div>
+
+      <canvas id="workCanvas" width="960" height="520"></canvas>
+
+      <div class="transport">
+        <div class="btn-group">
+          <button class="ctrl-btn primary" id="playBtn">▶ Integrate & Move Block</button>
+          <button class="ctrl-btn" id="riemannBtn">▭ Toggle Riemann Rectangles</button>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn warn" id="resetBtn">↺ Reset to x_i</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel-title">Calculus Telemetry</div>
+      <div class="telemetry-grid">
+        <div class="stat-box">Work W = ∫ F(x) dx<strong id="wRead" style="color:#34d399">+0.00 J</strong></div>
+        <div class="stat-box">Kinetic Energy K(x)<strong id="kRead">16.00 J</strong></div>
+        <div class="stat-box">Instantaneous F(x)<strong id="fRead" style="color:#38bdf8">+12.00 N</strong></div>
+        <div class="stat-box">Power P = dW/dt = F·v<strong id="pRead" style="color:#f59e0b">+48.0 W</strong></div>
+        <div class="stat-box">Current Position (x)<strong id="xRead">0.00 m</strong></div>
+        <div class="stat-box">Block Speed |v|<strong id="vRead">4.00 m/s</strong></div>
+      </div>
+
+      <div class="panel-title">Integration Bounds & Initial State</div>
+      <div class="slider-group">
+        <label><span>Lower Limit (x_i)</span><span class="val" id="xiLbl">-3.0 m</span></label>
+        <input type="range" id="xiSlider" min="-6.0" max="2.0" step="0.2" value="-3.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Upper Limit (x_f)</span><span class="val" id="xfLbl">+5.0 m</span></label>
+        <input type="range" id="xfSlider" min="-2.0" max="6.0" step="0.2" value="5.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Block Mass (m)</span><span class="val" id="mLbl">2.0 kg</span></label>
+        <input type="range" id="mSlider" min="0.5" max="8.0" step="0.5" value="2.0" />
+      </div>
+
+      <div class="slider-group">
+        <label><span>Initial Speed at x_i (v_i)</span><span class="val" id="viLbl">4.0 m/s</span></label>
+        <input type="range" id="viSlider" min="1.0" max="10.0" step="0.5" value="4.0" />
+      </div>
+
+      <div class="formula-card">
+        <code>W = ∫[x_i → x] F_x(x') dx' = ΔK = ½mv² - ½mv_i²</code>
+        <code>P(t) = dW / dt = F_x(x) · (dx / dt) = F⃗ · v⃗</code>
+        By the Fundamental Theorem of Calculus, the slope of Work $dW/dx$ equals the instantaneous force $F_x(x)$, while the net signed area equals $\Delta K$.
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('workCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const xiSlider = document.getElementById('xiSlider');
+    const xfSlider = document.getElementById('xfSlider');
+    const mSlider = document.getElementById('mSlider');
+    const viSlider = document.getElementById('viSlider');
+
+    const forces = {
+      poly: {
+        F: x => 12 - 0.8 * x * x,
+        intF: (a, b) => (12 * b - (0.8 / 3) * Math.pow(b, 3)) - (12 * a - (0.8 / 3) * Math.pow(a, 3))
+      },
+      spring: {
+        F: x => -3.5 * x + 0.12 * Math.pow(x, 3),
+        intF: (a, b) => (-1.75 * b * b + 0.03 * Math.pow(b, 4)) - (-1.75 * a * a + 0.03 * Math.pow(a, 4))
+      },
+      sin: {
+        F: x => 14 * Math.sin(0.65 * x),
+        intF: (a, b) => (-14 / 0.65) * (Math.cos(0.65 * b) - Math.cos(0.65 * a))
+      }
+    };
+
+    let currentFn = 'poly';
+    let curX = -3.0;
+    let running = false;
+    let showRiemann = false;
+
+    const originX = 480;
+    const scaleX = 62; // px per meter
+    const trackY = 125;
+    const graphOriginY = 365;
+    const scaleF = 5.5; // px per Newton
+
+    function toScreenX(xm) { return originX + xm * scaleX; }
+    function toWorldX(px) { return (px - originX) / scaleX; }
+
+    function getState() {
+      const xi = parseFloat(xiSlider.value);
+      const xf = Math.max(xi + 0.4, parseFloat(xfSlider.value));
+      const m = parseFloat(mSlider.value);
+      const vi = parseFloat(viSlider.value);
+      const { F, intF } = forces[currentFn];
+
+      const Ki = 0.5 * m * vi * vi;
+      const W = intF(xi, curX);
+      const K = Math.max(0, Ki + W);
+      const v = Math.sqrt((2 * K) / m);
+      const Fx = F(curX);
+      const P = Fx * v;
+      return { xi, xf, m, vi, Ki, W, K, v, Fx, P, F };
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, label) {
+      if (Math.abs(x2 - x1) < 3) return;
+      const dir = x2 >= x1 ? 1 : -1;
+      ctx.save();
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - dir * 9, y2 - 5);
+      ctx.lineTo(x2 - dir * 9, y2 + 5);
+      ctx.closePath(); ctx.fill();
+      if (label) {
+        ctx.font = '700 11px ui-monospace, monospace';
+        ctx.fillText(label, (x1 + x2) / 2 - 18, y1 - 10);
+      }
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const s = getState();
+
+      // 1. TOP TRACK SECTION (Physical Block)
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(40, trackY + 22); ctx.lineTo(920, trackY + 22); ctx.stroke();
+
+      for (let m = -6; m <= 6; m++) {
+        const sx = toScreenX(m);
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath(); ctx.moveTo(sx, trackY + 22); ctx.lineTo(sx, 495); ctx.stroke();
+        ctx.fillStyle = '#64748b'; ctx.font = '11px ui-monospace, monospace';
+        ctx.fillText(`${m}m`, sx - 10, trackY + 38);
+      }
+
+      // Draw Block at curX
+      const bx = toScreenX(curX);
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx - 26, trackY - 22, 52, 44, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.font = '700 11px ui-monospace, monospace';
+      ctx.fillText(`${s.m.toFixed(1)}kg`, bx - 18, trackY + 4);
+
+      // Force & Velocity Vectors on Block
+      drawArrow(bx, trackY - 8, bx + s.Fx * 4.5, trackY - 8, '#38bdf8', `F=${s.Fx.toFixed(1)}N`);
+      drawArrow(bx, trackY + 12, bx + s.v * 9, trackY + 12, '#f59e0b', `v=${s.v.toFixed(1)}m/s`);
+
+      // 2. BOTTOM GRAPH SECTION: F_x(x) vs x Definite Integral
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(40, graphOriginY); ctx.lineTo(920, graphOriginY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(originX, 210); ctx.lineTo(originX, 495); ctx.stroke();
+
+      // Shaded Definite Integral Area from x_i to curX
+      const steps = showRiemann ? 18 : 120;
+      const dx = (curX - s.xi) / steps;
+      for (let i = 0; i < steps; i++) {
+        const xLeft = s.xi + i * dx;
+        const xMid = xLeft + 0.5 * dx;
+        const fVal = s.F(xMid);
+        const sx1 = toScreenX(xLeft);
+        const sx2 = toScreenX(xLeft + dx);
+        const sy = graphOriginY - fVal * scaleF;
+
+        ctx.fillStyle = fVal >= 0 ? 'rgba(52, 211, 153, 0.28)' : 'rgba(251, 113, 133, 0.28)';
+        ctx.fillRect(Math.min(sx1, sx2), Math.min(graphOriginY, sy), Math.abs(sx2 - sx1), Math.abs(graphOriginY - sy));
+        if (showRiemann) {
+          ctx.strokeStyle = fVal >= 0 ? '#34d399' : '#fb7185';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(Math.min(sx1, sx2), Math.min(graphOriginY, sy), Math.abs(sx2 - sx1), Math.abs(graphOriginY - sy));
+        }
+      }
+
+      // Plot F(x) Curve
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let px = 50; px <= 910; px += 3) {
+        const xm = toWorldX(px);
+        const py = graphOriginY - s.F(xm) * scaleF;
+        px === 50 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Limit Markers x_i and x_f
+      [[s.xi, 'x_i', '#94a3b8'], [s.xf, 'x_f', '#c084fc'], [curX, 'x', '#34d399']].forEach(([xm, lbl, col]) => {
+        const sx = toScreenX(xm);
+        ctx.strokeStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(sx, 215); ctx.lineTo(sx, 490); ctx.stroke();
+        ctx.fillStyle = col; ctx.font = '700 12px ui-monospace, monospace';
+        ctx.fillText(lbl, sx + 5, 230);
+      });
+
+      // Readouts
+      document.getElementById('wRead').textContent = (s.W >= 0 ? '+' : '') + s.W.toFixed(2) + ' J';
+      document.getElementById('wRead').style.color = s.W >= 0 ? '#34d399' : '#fb7185';
+      document.getElementById('kRead').textContent = s.K.toFixed(2) + ' J';
+      document.getElementById('fRead').textContent = (s.Fx >= 0 ? '+' : '') + s.Fx.toFixed(2) + ' N';
+      document.getElementById('pRead').textContent = (s.P >= 0 ? '+' : '') + s.P.toFixed(1) + ' W';
+      document.getElementById('xRead').textContent = curX.toFixed(2) + ' m';
+      document.getElementById('vRead').textContent = s.v.toFixed(2) + ' m/s';
+
+      document.getElementById('xiLbl').textContent = s.xi.toFixed(1) + ' m';
+      document.getElementById('xfLbl').textContent = s.xf.toFixed(1) + ' m';
+      document.getElementById('mLbl').textContent = s.m.toFixed(1) + ' kg';
+      document.getElementById('viLbl').textContent = s.vi.toFixed(1) + ' m/s';
+    }
+
+    function loop() {
+      if (running) {
+        const s = getState();
+        const dt = 1 / 60;
+        const speed = Math.max(0.8, s.v * 0.45);
+        curX += speed * dt;
+        if (curX >= s.xf || s.K <= 0.01) {
+          curX = Math.min(curX, s.xf);
+          running = false;
+          document.getElementById('playBtn').textContent = '↺ Replay Integral';
+        }
+      }
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    [xiSlider, xfSlider, mSlider, viSlider].forEach(el => {
+      el.addEventListener('input', () => {
+        if (el === xiSlider) curX = parseFloat(xiSlider.value);
+        render();
+      });
+    });
+
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFn = btn.dataset.fn;
+        curX = parseFloat(xiSlider.value);
+        running = false;
+        document.getElementById('playBtn').textContent = '▶ Integrate & Move Block';
+      });
+    });
+
+    document.getElementById('playBtn').addEventListener('click', e => {
+      const s = getState();
+      if (curX >= s.xf - 0.05) curX = s.xi;
+      running = !running;
+      e.target.textContent = running ? '⏸ Pause' : '▶ Integrate & Move Block';
+    });
+
+    document.getElementById('riemannBtn').addEventListener('click', () => {
+      showRiemann = !showRiemann;
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      running = false;
+      curX = parseFloat(xiSlider.value);
+      document.getElementById('playBtn').textContent = '▶ Integrate & Move Block';
+    });
+
+    // Drag current position x directly on canvas
+    let dragging = false;
+    canvas.addEventListener('mousedown', () => { dragging = true; running = false; });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const r = canvas.getBoundingClientRect();
+      const mx = (e.clientX - r.left) * (canvas.width / r.width);
+      const xm = toWorldX(mx);
+      const s = getState();
+      curX = Math.max(s.xi, Math.min(s.xf, xm));
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    loop();
+  </script>
+</body>
+</html>
